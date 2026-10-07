@@ -1,0 +1,26 @@
+title: The Whispering Forest
+south: town
+north: castle
+1: Lucky: Lions are grumpy! If one bumps you, you lose a heart. Zap them with SPACE if you have ammo. The red key is hidden in a ring of trees.
+map:
+############################    ############################
+#TTTTTTTTTTTTTTTTTTTTTTTTTTT    TTTTTTTTTTTTTTTTTTTTTTTTTTT#
+#T     *                                       *          T#
+#T  TTTTTTTTT     L                     T          TTT    T#
+#T  T       T                           T          TTT    T#
+#T  T   r   T  TTTTTTTT           L     T    *     TTT    T#
+#T  T       T         T                 T                 T#
+#T  TTTT TTTT         T  1              T                 T#
+#T                    T           TTTTTTTTTTT             T#
+#T   L        a       T                                   T#
+#TTTTTTTTT   TTTTTTT                         TTTTTTTTTTTTTT#
+#T                                       L                T#
+#T   *                           TTT+                     T#
+#T    TTTT      T                TTT      TTTT TTTT       T#
+#T    TTTT      T   *                     T       T  L    T#
+#T              T                   a     T   *   T       T#
+#T        L     TTTTTTTTTT                T       T       T#
+#T                         L              TTTTTTTTT       T#
+#T  *                                                  *  T#
+#TTTTTTTTTTTTTTTTTTTTTTTTTTT    TTTTTTTTTTTTTTTTTTTTTTTTTTT#
+############################    ############################

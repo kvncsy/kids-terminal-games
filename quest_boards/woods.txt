@@ -1,0 +1,27 @@
+title: Spooky Woods
+dark: yes
+south: islands
+east: house
+1: Scaredy Bot: It is so dark! Ghosts say BOO. Zap them!
+map:
+############################################################
+#TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT#
+#T a                        *                             T#
+#T  TTTTTTTTT   TTTTTTTTT         TTTTTTTTTTT   TTTTTTTT  T#
+#T  TTTTTTTTT   TTTTTTTTT         TTTTTTTTTTT   TTTTTTTT* T#
+#T  TTTTTTTTT   TTTTTTTTT     H   TTTTTTTTTTT   TTTTTTTT  T#
+#T  TTTTTTTTT   TTTTTTTTT         TTTTTTTTTTT   TTTTTTTT  T#
+#T              TTTTTTTTT                       TTTTTTTT  T#
+#T    *   H     TTTTTTTTT                 a   *           T#
+#T                                                H         
+#T  TTTTTTT           +         TTTTTTTTT   TTTTTTTTT       
+#T  TTTTTTT                     TTTTTTTTT   TTTTTTTTT       
+#T  TTTTTTT   TTTTTTTTTTTTT     TTTTTTTTT   TTTTTTTTT     T#
+#T  TTTTTTT   TTTTTTTTTTTTT     TTTTTTTTT   TTTTTTTTT     T#
+#T  TTTTTTT   TTTTTTTTTTTTT     TTTTTTTTT    H            T#
+#T  TTTTTTT   TTTTTTTTTTTTT     TTTTTTTTT   TTTTTTTTTTTT  T#
+#T  TTTTTTT                   a TTTTTTTTT   TTTTTTTTTTTT  T#
+#T                  H          1            TTTTTTTTTTTT  T#
+#T          *                       *                     T#
+#TTTTTTTTTTTTTTTTTTTTTTTTTTT    TTTTTTTTTTTTTTTTTTTTTTTTTTT#
+############################    ############################

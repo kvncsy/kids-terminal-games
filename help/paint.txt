@@ -1,0 +1,22 @@
+# PIXEL PAINTER    (type: paint)
+
+Paint pictures one square at a time.
+  arrows       move the brush
+  SPACE        paint a square
+  ENTER        pen down (moving paints) or pen up
+  1 to 8       colors
+  9            rainbow brush
+  0            eraser
+  F            fill a whole area
+  M            mirror: both sides paint the same
+  U            undo (BACKSPACE works too)
+  S            save your picture
+  O            open your saved pictures
+  C            clear (press it twice)
+  Esc          goes back to the menu
+
+There are 4 SECRET TOOLS hidden on other letters. Can you find them?
+Your pictures are saved in the My Pictures folder.
+
+# STARTING OVER
+  paint reset  hides the secret tools again (your pictures stay)

@@ -1,0 +1,16 @@
+# BLEEP BLOOP BAND    (type: band)
+
+Every key makes music, and nothing sounds wrong.
+  1 to 0      drums (hold one down for a drum roll!)
+  Q W E ...   bells
+  A S D ...   bloops
+  Z X C ...   bass
+  Esc         goes back to the menu
+Left is low, right is high.
+
+There are 13 secret tricks to find. How many can you discover?
+Hint: try the big keys and the arrow keys!
+
+# STARTING OVER
+  band reset  hides all the secret stickers again
+  band hints  shows how to find every secret (grown-ups only!)

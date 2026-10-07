@@ -1,0 +1,19 @@
+# TIMES TABLES    (type: times)
+
+Big flash cards! Type the answer and press ENTER.
+  1  WARM-UP       1 to 10 times 1 to 10
+  2  BIG NUMBERS   11 to 20 times 1 to 10
+  3  MEGA          11 to 20 times 11 to 20
+  4  MIX           a bit of everything
+  5  LIGHTNING     60 seconds! Beat your record
+  6  MY CHART      see every fact you know, in color
+  H            a hint that breaks a hard one into easy pieces
+  BACKSPACE    fixes a typo
+  M            picks another times tables game
+  Esc          goes back to the menu
+
+Facts you miss come back more often, so you learn them.
+Get a whole times table right and it gets a star on your chart!
+
+# STARTING OVER
+  times reset  clears the chart and the lightning record

@@ -1,0 +1,36 @@
+# ROBOT PET    (type: pet)
+
+A little robot lives in the computer. Take care of it!
+  1            feed it electricity
+  2            play catch
+  3            dance
+  4            tickle
+  5            tell a joke
+  6            sleep or wake up
+  7            clean up the mess (dust bunnies, screws, oil drips)
+  8            oil (if it goes rusty, it needs 2 squirts!)
+  Esc          say goodbye (it will wait for you)
+
+Type a word and press ENTER to talk to your robot.
+It knows lots of secret words. Can you find them all?
+It gets hungry while you're away, and sleepy at night.
+If you leave a big mess, it goes rusty and can't dance or play.
+
+# SECRET WORDS (27)
+  hi / hello / hey            bad
+  dance                       age
+  sing                        thanks / thank
+  jump                        bye
+  spin                        beep
+  joke                        boop
+  sleep / goodnight           color
+  wake                        hungry
+  love                        happy
+  pizza                       sad
+  count                       clean / broom / tidy
+  math                        oil
+  robot                       (your robot's name)
+  good
+
+# STARTING OVER
+  pet reset    a brand new robot moves in

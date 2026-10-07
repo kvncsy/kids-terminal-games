@@ -1,0 +1,15 @@
+# ALPHABET RAIN    (type: rain)
+
+Letters fall from the clouds. Type a letter to pop it!
+  A to Z      pop that letter
+  0 to 9      pop numbers too (from level 3)
+  Esc         goes back to the menu
+
+Missed letters wait in the puddle, so you can still pop them.
+Golden letters are worth 5 points!
+
+Pop 25 letters to finish a level. Then you choose:
+  ENTER       move on to the next level
+  R           play the same level again
+
+Every game of Alphabet Rain starts fresh, so there is nothing to reset.

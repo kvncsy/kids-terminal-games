@@ -1,0 +1,15 @@
+# SKI HILL    (type: ski)
+
+Ski down the snowy mountain!
+  LEFT / RIGHT turn (press again to turn more)
+  DOWN         point straight down the hill: fastest!
+  UP           stop
+  SPACE        jump over things
+  Esc          goes back to the menu
+
+Get the stars. Ski between the red and blue flags for 3 stars.
+Ramps make you fly! Trees and rocks go BONK.
+After 400 meters the snow monster wakes up. RUN!
+
+# STARTING OVER
+  ski reset    forget the best run

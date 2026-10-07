@@ -1,0 +1,13 @@
+# BINARY LIGHTS    (type: lights)
+
+Eight light bulbs that count the way a computer does.
+Each bulb is worth a number. Add up the lit bulbs to get the answer!
+  1 to 8       switch a bulb on or off (the key is under it)
+  SPACE        count up (hold it down to count fast!)
+  arrows       count up and down
+  0            all the lights off
+  ENTER        a challenge: can you make the number?
+  A to Z       see the secret number the computer uses for a letter
+  Esc          goes back to the menu
+
+What happens when all eight lights are on and you count one more?

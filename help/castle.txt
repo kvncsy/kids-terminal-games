@@ -1,0 +1,17 @@
+# CASTLE CANNONS    (type: castle)
+
+Aim your cannon and knock down the other castle!
+  1 2 3        play the SLEEPY, SILLY or TRICKY computer
+  4            two players take turns
+  UP / DOWN    tilt the cannon
+  LEFT / RIGHT less power / more power
+  SPACE        FIRE!
+  Esc          back to the start screen
+
+Three hits and a castle falls apart. Blow away the ground
+under a castle and it falls down. CRASH!
+Too short? More power. Too far? Less power.
+Win to get to the next level. Watch out for the wind!
+
+# STARTING OVER
+  castle reset back to level 1

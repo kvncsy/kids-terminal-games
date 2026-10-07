@@ -1,0 +1,12 @@
+# BIG CALCULATOR    (type: calc)
+
+A calculator with giant numbers and a fun fact for every answer.
+  0 to 9       numbers (each one plays a note!)
+  + - x /      plus, minus, times, divide ( and ) work too
+  ENTER        works it out
+  BACKSPACE    fixes a mistake
+  C            clears everything
+  Esc          goes back to the menu
+
+Things to try: 12x12   1/3   2x2x2x2x2x2x2x2   111111111x111111111
+What happens if you divide by zero? Try it!

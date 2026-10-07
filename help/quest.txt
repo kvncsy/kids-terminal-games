@@ -1,0 +1,22 @@
+# THE QUEST FOR THE GOLDEN CROWN    (type: quest)
+
+Explore the land, find the four keys, and open the castle
+doors to reach the Golden Crown!
+  arrow keys   walk
+  SPACE        zap (you need ammo)
+  Esc          saves your quest and goes back to the menu
+
+Walk into robots to talk to them. They give good clues!
+Gems are treasure. Lions are grumpy: a bump costs a heart.
+Pushing a boulder moves it. Push one into water to make a bridge!
+Weak walls break if you zap them. Zaps fly over water too.
+Some places are dark. Find the lamp to see more.
+Ghosts say BOO and send you back. Zap them!
+
+# STARTING OVER
+  quest reset  starts a brand new quest
+  quest check  looks for mistakes in the board files
+
+# MAKE YOUR OWN WORLD
+Every place in the quest is a text file in the quest_boards folder.
+Ask a grown-up to help you change one or make a new one!

@@ -1,0 +1,12 @@
+# HACKER KEYS    (type: keys)
+
+Every key does something!
+  A to Z      decrypts a word that starts with that letter
+  0 to 9      shows the number and adds points in the corner
+  0 0 0       sets your points back to zero
+  SPACE       ACCESS GRANTED... or DENIED!
+  ENTER       hacks something silly
+  Esc         goes back to the menu
+
+# STARTING OVER
+  keys reset  sets your points back to zero

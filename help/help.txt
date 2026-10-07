@@ -1,0 +1,32 @@
+# KIDS COMPUTER HELP
+
+Type a word, then press ENTER.
+Press Esc in any game to come back here.
+
+# GAMES
+  keys     Hacker Keys: letters, words, points and robots
+  band     Bleep Bloop Band: make music with the keyboard
+  robot    Robot Commander: tell the robot where to go
+  rain     Alphabet Rain: pop the falling letters
+  quest    The Quest for the Golden Crown: a big adventure
+  times    Times Tables: big multiplication flash cards
+  calc     Big Calculator: giant numbers and fun facts
+  lights   Binary Lights: count like a computer
+  secret   Secret Codes: make and crack secret messages
+  paint    Pixel Painter: paint pictures
+  pet      Robot Pet: a robot friend to look after
+  castle   Castle Cannons: knock down the other castle
+  ski      Ski Hill: ski away from the snow monster
+
+# HELP AND STARTING OVER
+  help           shows this help
+  GAME help      help for one game (works with every game!)
+  GAME reset     starts a game over
+  menu           shows the menu
+  clear          cleans up the screen
+
+# KEYS TO KNOW
+  ENTER        runs the word you typed
+  BACKSPACE    rubs out a mistake
+  Esc          leaves a game and comes back here
+  arrow keys   move things around in the games

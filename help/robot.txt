@@ -1,0 +1,14 @@
+# ROBOT COMMANDER    (type: robot)
+
+Tell the robot where to go, then watch it follow your program.
+  arrow keys   add a step to the program
+  2 to 9       then an arrow: repeat that step (3 then > means go 3 times)
+  BACKSPACE    takes back the last step
+  ENTER        runs the program
+  SPACE        robot dance!
+  Esc          goes back to the menu
+
+Get every star to finish a level. Rocks go BONK!
+
+# STARTING OVER
+  robot reset  goes back to level 1
