@@ -320,11 +320,13 @@ class Game:
         return data
 
     def old_save(self, data):
-        """The old one-quest save goes in the level its board is in now (the haunted
-        house used to be next to Robot Town); the levels before it count as won."""
+        """An old one-quest save. If it was already in a board that is now part of a later
+        level (the haunted house), that level opens, the ones before it count as won, and it
+        starts fresh at its first room: the old walls and doors don't match it."""
         boards, _ = load_world()
         lv = boards[data["board"]].level if data.get("board") in boards else min(self.levels)
-        return {"unlocked": lv, "done": [v for v in self.levels if v < lv], "slots": {str(lv): data}}
+        slots = {str(lv): data} if lv == min(self.levels) else {}
+        return {"unlocked": lv, "done": [v for v in self.levels if v < lv], "slots": slots}
 
     def write_progress(self):
         try:
@@ -452,8 +454,9 @@ class Game:
                     grid = [list(r) for r in rows]
                     for y in range(BOARD_H):            # new ways through (like the lake's road south)
                         for x in range(BOARD_W):        # open up in old saved games too
-                            if grid[y][x] == "#" and fresh[y][x] in WALKABLE:
-                                grid[y][x] = fresh[y][x]
+                            edge = x in (0, BOARD_W - 1) or y in (0, BOARD_H - 1)
+                            if (grid[y][x] == "#" and fresh[y][x] in WALKABLE) or edge or fresh[y][x] == "!":
+                                grid[y][x] = fresh[y][x]  # and the edges and the goal are always the real ones
                     self.boards[name].grid = grid
             self.board = self.boards[data["board"]]
             self.px, self.py = data["x"], data["y"]
