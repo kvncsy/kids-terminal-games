@@ -1,4 +1,5 @@
 title: Treasure Islands
+level: 2
 west: bay
 north: woods
 1: Captain: Push the rocks into the water. Make bridges to the islands!

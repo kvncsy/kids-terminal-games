@@ -28,7 +28,7 @@ type here > _
 | `band` | Bleep Bloop Band | A wavetable synthesizer where no note sounds wrong; each keyboard row is an instrument, with beats and 13 secrets to discover |
 | `robot` | Robot Commander | Program a robot with arrow keys; numbers make repeats (a first taste of loops) |
 | `rain` | Alphabet Rain | Type the falling letters to pop them; nobody loses |
-| `quest` | The Quest for the Golden Crown | A [ZZT](https://en.wikipedia.org/wiki/ZZT)-style adventure across 10 boards: keys, doors, boulders, bridges, a haunted house. Every board is a text file you can edit |
+| `quest` | The Quest for the Golden Crown | A [ZZT](https://en.wikipedia.org/wiki/ZZT)-style adventure in three levels (Robot Town, Spooky Islands, Rainbow Kingdom) with ASCII movies between them: keys, doors, boulders, bridges, ghosts, leprechauns and surprise boxes. Every board is a text file you can edit |
 | `times` | Times Tables | Big flash cards for 1–20, a lightning round, hints that break hard facts apart, and a chart that fills in as they learn |
 | `calc` | Big Calculator | Giant numbers and a fun fact about every answer |
 | `lights` | Binary Lights | Eight light bulbs that count in binary |

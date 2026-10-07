@@ -1,7 +1,8 @@
 title: Haunted House
+level: 2
 dark: yes
 west: woods
-1: Nice Ghost: BOO! Ha ha. I am a NICE ghost. The green key is in the last room.
+1: Nice Ghost: BOO! Ha ha. I am a NICE ghost. My treasure is in the last room!
 2: Zap: Zap the yellow door. The light blue key is in there!
 map:
 ############################################################
@@ -20,7 +21,7 @@ map:
 #  ####### ########  ####### ########  ########C#########  #
 #  #              #  #              #  #                #  #
 #  #              #  #  *           #  #  *             #  #
-#  #  a           #  #        H     #  #            g   #  #
+#  #  a           #  #        H     #  #            !   #  #
 #  #           *  #  #              #  #    +         * #  #
 #  ################  ################  ##################  #
 #                                                          #

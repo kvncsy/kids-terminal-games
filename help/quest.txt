@@ -1,10 +1,16 @@
 # THE QUEST FOR THE GOLDEN CROWN    (type: quest)
 
-Explore the land, find the four keys, and open the castle
-doors to reach the Golden Crown!
-  arrow keys   walk
+Three big adventures, one after another:
+  LEVEL 1  Robot Town       find the Golden Crown
+  LEVEL 2  Spooky Islands   find the Ghost's Treasure
+  LEVEL 3  Rainbow Kingdom  find the Pot of Gold
+Win a level and the next one opens. Levels you have opened
+show up on the PICK A LEVEL screen when Quest starts.
+Every level keeps its own save.
+
+  arrow keys   walk (and pick a level)
+  ENTER        play the level, or skip a movie
   SPACE        zap (you need ammo)
-  M            the menu: keep going, start over, or pick any level
   Esc          saves your quest and goes back to the menu
 
 Walk into robots to talk to them. They give good clues!
@@ -13,9 +19,12 @@ Pushing a boulder moves it. Push one into water to make a bridge!
 Weak walls break if you zap them. Zaps fly over water too.
 Some places are dark. Find the lamp to see more.
 Ghosts say BOO and send you back. Zap them!
+Leprechauns run away. Catch one (or zap it) for gold!
+Fairies give you back your hearts.
+A ? box is a surprise. Open it and see!
 
 # STARTING OVER
-  quest reset  starts a brand new quest
+  quest reset  starts over from Level 1 (all levels lock again)
   quest check  looks for mistakes in the board files
 
 # MAKE YOUR OWN WORLD

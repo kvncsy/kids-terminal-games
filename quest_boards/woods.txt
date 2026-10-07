@@ -1,4 +1,5 @@
 title: Spooky Woods
+level: 2
 dark: yes
 south: islands
 east: house

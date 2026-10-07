@@ -1,0 +1,34 @@
+title: Rainbow Meadow
+level: 3
+adventure: Rainbow Kingdom
+goal: the Pot of Gold
+opening: rainbow
+ending: rainbow_end
+intro: Follow the rainbow! Catch leprechauns for gold. Open the ? boxes. Find the pot of gold!
+east: fairy
+north: crystal
+1: Rainbow Bot: Follow the rainbow! Catch a leprechaun for gold!
+2: Digger Bot: The Crystal Cave is up here. The RED key is inside!
+3: Fairy Bot: The Fairy Forest is this way. Zap the yellow walls!
+map:
+############################    ############################
+#                            :                             #
+#  TTTT   *             $$   :                          $$ #
+#  TTTT                      : 2  *               ?        #
+#  TTTT     ?                :                             #
+#                        E   :                             #
+#             ~~~~~~~~~      :              *       TTTTT  #
+#    *        ~~~~~~~~~      :                      TTTTT  #
+#             :::::::::      :      a                      #
+# TTT         ~~~~~~~~~      :                              
+# TTT                        :::::::::::::::::::::::::::::: 
+#                                       :                   
+#     a                                 : $$        3      #
+#          1                            : $$    E          #
+#         $  $  $  $  $  $  $  $  $  $  :              *   #
+#     @ :::::::::::::::::::::::::::::::::                  #
+#                                             F            #
+#               *                 TTTT                ?    #
+#  +                ?             TTTT                     #
+#                                                          #
+############################################################

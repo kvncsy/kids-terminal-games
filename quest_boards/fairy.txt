@@ -1,0 +1,28 @@
+title: Fairy Forest
+level: 3
+west: meadow
+east: rcastle
+1: Fairy: Zap the yellow walls! There is a secret room!
+2: Fairy: The rainbow castle is that way. Bring the RED and GREEN keys!
+map:
+############################################################
+#                                                          #
+#    TTTTTTTT                      TTTTTTTT   TTTTT        #
+#  a TTTTTTTT                      TTTTTTTT   TTTTT     a  #
+#    TTTTTTTT        *  *  *  ?    TTTTTTTT   TTTTT        #
+#    TTTTTTTT       *       *      TTTTTTTT                #
+#                  *   F F   *     TTTTTTTT                #
+#                   *       *                E      ?      #
+#       ?      E      * *  *                          2    #
+                                                            
+ :::::::::::::::::::::::::::::::::::::::::::::::::::::::::: 
+                    1                                       
+#             a                                            #
+#                 TTTTTTT   %%%%%%%%%%%%%       TTTTTTTT   #
+#    TTTTTT       TTTTTTT   % *       * %       TTTTTTTT   #
+#    TTTTTT       TTTTTTT   %     g     % $$$$$ TTTTTTTT   #
+#    TTTTTT       TTTTTTT   % $$$$$$$$$ %       TTTTTTTT   #
+#    TTTTTT       TTTTTTT   %     ?     %   +   TTTTTTTT   #
+#    TTTTTT                 %%%%%%%%%%%%%       TTTTTTTT   #
+#                                                          #
+############################################################

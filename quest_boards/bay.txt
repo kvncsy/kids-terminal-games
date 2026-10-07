@@ -1,13 +1,18 @@
 title: Bridge Bay
-north: lake
+opening: ship
+ending: ghosts
+level: 2
+adventure: Spooky Islands
+goal: the Ghost's Treasure
+intro: Push rocks into the water to make bridges. Zap the yellow walls. Find the ghost's treasure!
 east: islands
 1: Splash: Push a rock into the water. It makes a bridge!
 2: Rocky: Push a rock DOWN into the water!
 3: Zap: Zap the yellow walls. What is inside?
 map:
-############################    ############################
+############################################################
 #                                                          #
-#    a                   *                                 #
+#    a                   *   @                             #
 #                     1                           a        #
 #                                                          #
 #~~~~~~~~~==~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#

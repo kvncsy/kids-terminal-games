@@ -1,11 +1,15 @@
 title: Robot Town
+adventure: Robot Town
+goal: the Golden Crown
+opening: town
+ending: crown
 north: forest
 east: lake
 west: cave
 1: Bolt: Welcome to Robot Town! Walk with the ARROW keys. Walk into a robot like me to talk.
 2: Beep: See the sparkly gems? Walk over them to collect them!
 3: Zap: Press SPACE to zap in the direction you are walking. Zaps need ammo, so grab the ammo packs.
-4: Queen Bot: The Golden Crown is in the castle, north past the forest. You need 4 keys: RED in the forest. BLUE at the lake. YELLOW in the cave. GREEN in the spooky house, south of the lake.
+4: Queen Bot: The Golden Crown is in the castle, far north past the forest. Its doors need the RED key (forest), the BLUE key (lake, to the east) and the YELLOW key (cave, to the west).
 map:
 ############################    ############################
 #                                                          #

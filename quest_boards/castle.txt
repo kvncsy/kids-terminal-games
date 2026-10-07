@@ -1,12 +1,12 @@
 title: Crown Castle
 south: forest
 north: throne
-1: Knight Bot: Four doors guard the crown: red, blue, yellow and green. Each key opens the door of its own color.
+1: Knight Bot: Three doors guard the crown: red, blue and yellow. Each key opens the door of its own color.
 2: Guard Bot: Lost some hearts? Look inside the towers.
 map:
 ############################    ############################
 #                          #    #                          #
-#  *           L           #GGGG#           L           a  #
+#  *           L           #    #           L           a  #
 #    ######                #    #                ######    #
 #    #*   #                #YYYY#                #   *#    #
 #    #  + #                #    #                #  a #    #
