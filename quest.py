@@ -313,11 +313,18 @@ class Game:
         except (OSError, ValueError):
             data = {}
         if "grids" in data:                                   # a save from before there were levels
-            data = {"unlocked": 1, "done": [], "slots": {"1": data}}
+            data = self.old_save(data)
         data.setdefault("unlocked", min(self.levels))
         data.setdefault("done", [])
         data.setdefault("slots", {})
         return data
+
+    def old_save(self, data):
+        """The old one-quest save goes in the level its board is in now (the haunted
+        house used to be next to Robot Town); the levels before it count as won."""
+        boards, _ = load_world()
+        lv = boards[data["board"]].level if data.get("board") in boards else min(self.levels)
+        return {"unlocked": lv, "done": [v for v in self.levels if v < lv], "slots": {str(lv): data}}
 
     def write_progress(self):
         try:
