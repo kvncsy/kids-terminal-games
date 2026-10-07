@@ -4,6 +4,7 @@ Explore the land, find the four keys, and open the castle
 doors to reach the Golden Crown!
   arrow keys   walk
   SPACE        zap (you need ammo)
+  M            the menu: keep going, start over, or pick any level
   Esc          saves your quest and goes back to the menu
 
 Walk into robots to talk to them. They give good clues!

@@ -14,7 +14,10 @@ Like ZZT, the world is made of boards. Each board is a plain text file in
 quest_boards/ that you can change, or copy to make your own
 (see quest_boards/README.txt).
 
-  arrows  walk      SPACE  zap      Esc  save and quit
+  arrows  walk      SPACE  zap      M  menu      Esc  save and quit
+
+The menu at the start can keep going with a saved quest, start a new one, or
+jump straight to any level (with some ammo to zap with).
 
   python3 quest.py           play (continues a saved game)
   python3 quest.py --reset   start a new quest
@@ -51,6 +54,8 @@ LION_STEP = 0.55           # seconds between lion moves (slow, so they're easy t
 LION_CHASE = 0.35          # how often a lion that sees you walks toward you
 GHOST_STEP = 0.6           # seconds between ghost moves
 DARK_SIGHT, LAMP_SIGHT = 4.0, 6.5   # how far you can see on a dark board, without and with the lamp
+LEVEL_ORDER = ["town", "forest", "lake", "cave", "bay", "islands", "woods", "house", "castle", "throne"]
+LEVEL_AMMO = 10            # ammo you start with when you jump straight to a level
 ZAP_STEP = 0.035           # seconds for a zap to move one square
 LEGEND = set(" #%~=TO*a+lrbygpcRBYGPCLH!@123456789")
 KEYS = {"r": "red", "b": "blue", "y": "yellow", "g": "green", "p": "purple", "c": "light blue"}
@@ -231,12 +236,65 @@ class Game:
         fancy = utf and (os.environ.get("TERM") != "linux" or os.environ.get("KIDS_FANCY") == "1")
         self.look = FANCY if fancy else PLAIN
         self.new_game()
-        if self.load_save():
+        self.open_menu()
+
+    # ------------------------------------------------------------ the menu
+    def open_menu(self):
+        """Keep going, a new quest, or any level. Boards you make yourself show up here too."""
+        self.screen = "menu"
+        names = [n for n in LEVEL_ORDER if n in self.boards] + sorted(n for n in self.boards if n not in LEVEL_ORDER)
+        self.menu_items = ([("continue", "Keep going")] if os.path.exists(SAVE_FILE) else []) + [("new", "New quest")]
+        self.menu_levels = len(self.menu_items)                  # where the numbered levels start
+        self.menu_items += [(n, self.boards[n].title) for n in names]
+        self.menu_pick = 0
+
+    def menu_key(self, key, now):
+        n = len(self.menu_items)
+        if key in (curses.KEY_UP, curses.KEY_DOWN):
+            self.menu_pick = (self.menu_pick + (1 if key == curses.KEY_DOWN else -1)) % n
+            self.snd.ammo()
+        elif key in ("\n", "\r", " ", curses.KEY_ENTER):
+            self.choose(self.menu_items[self.menu_pick][0])
+        elif isinstance(key, str) and key.isdigit():
+            i = self.menu_levels + (int(key) or 10) - 1        # 1 is the first level ... 0 is the tenth
+            if i < n:
+                self.menu_pick = i
+                self.choose(self.menu_items[i][0])
+        return True
+
+    def choose(self, what):
+        self.new_game()
+        self.screen = "play"
+        self.snd.whoosh()
+        if what == "continue" and self.load_save():
             self.say_box("Welcome back!", "Your quest continues. Find the Golden Crown!")
-        else:
+        elif what in ("continue", "new"):
             self.say_box("THE QUEST FOR THE GOLDEN CROWN",
                          "Walk with the ARROW keys. Walk into robots to talk to them. "
                          "Find the four keys and bring home the Golden Crown!")
+        else:
+            self.jump_to(what)
+
+    def jump_to(self, name):
+        b = self.boards[name]
+        self.board = b
+        self.px, self.py = b.start or self.edge_entry(b)
+        self.entry = (self.px, self.py)
+        self.boulders_home()
+        if name != START_BOARD:
+            self.ammo = LEVEL_AMMO
+        self.say("~ %s ~" % b.title, YELLOW, 3)
+
+    def edge_entry(self, b):
+        """Where you'd walk in: the middle of the first doorway on the board's edge."""
+        for d in list(b.exits) + list(DIRS):
+            edge = {"north": [(x, 0) for x in range(BOARD_W)], "south": [(x, BOARD_H - 1) for x in range(BOARD_W)],
+                    "west": [(0, y) for y in range(BOARD_H)], "east": [(BOARD_W - 1, y) for y in range(BOARD_H)]}[d]
+            gap = [c for c in edge if b.at(*c) in WALKABLE]
+            if gap:
+                return gap[len(gap) // 2]
+        ground = [(x, y) for y in range(BOARD_H) for x in range(BOARD_W) if b.at(x, y) == " "]
+        return min(ground, key=lambda c: abs(c[0] - BOARD_W // 2) + abs(c[1] - BOARD_H // 2))
 
     # ------------------------------------------------------------ state
     def new_game(self):
@@ -302,15 +360,23 @@ class Game:
     # ------------------------------------------------------------ keys
     def handle_key(self, key, now):
         if key == "\x1b":
-            self.save()
+            if self.screen == "play":
+                self.save()
             return False
+        if self.screen == "menu":
+            return self.menu_key(key, now)
+        if isinstance(key, str) and key.lower() == "m":
+            self.save()
+            self.open_menu()
+            self.snd.whoosh()
+            return True
         if self.dialog:
             if now - self.dialog[2] > 0.35:      # so a mashed key doesn't skip it unread
                 self.dialog = None
             return True
         if self.won:
             if key in ("\n", "\r", curses.KEY_ENTER):
-                self.new_game()
+                self.open_menu()
             return True
         moves = {curses.KEY_UP: (0, -1), curses.KEY_DOWN: (0, 1), curses.KEY_LEFT: (-1, 0), curses.KEY_RIGHT: (1, 0)}
         if key in moves:
@@ -531,7 +597,7 @@ class Game:
         return t not in " =~"                        # zaps fly over ground, bridges and water
 
     def update(self, now):
-        if self.dialog or self.won:
+        if self.screen == "menu" or self.dialog or self.won:
             return
         b = self.board
         if now >= self.next_zap:
@@ -611,6 +677,10 @@ class Game:
             scr.refresh()
             return
         ox, oy = (w - SCREEN_W) // 2, max(0, (h - SCREEN_H) // 2)
+        if self.screen == "menu":
+            self.draw_menu(ox, oy, now)
+            scr.refresh()
+            return
         b = self.board
         sight = (LAMP_SIGHT if self.lamp else DARK_SIGHT) ** 2
         for y in range(BOARD_H):
@@ -636,7 +706,7 @@ class Game:
         elif self.won:
             self.draw_box(ox, oy, "YOU FOUND THE GOLDEN CROWN!",
                           textwrap.wrap("You are the hero of Robot Town! You collected %d gems and scored %d points. "
-                                        "Press ENTER to play again, or Esc to finish." % (self.gems, self.score), 40),
+                                        "Press ENTER for the menu, or Esc to finish." % (self.gems, self.score), 40),
                           "", RAINBOW[int(now * 6) % len(RAINBOW)])
         scr.refresh()
 
@@ -665,8 +735,30 @@ class Game:
             put(self.scr, y + 10, x + 9, self.look["l"], on_blue(YELLOW))
         for i, line in enumerate(textwrap.wrap(self.board.title, 17)[:2]):
             put(self.scr, y + 12 + i, x + 2, line, on_blue(CYAN))
-        for r, text in ((15, "  Arrows  walk"), (16, "  Space   zap"), (17, "  Esc     quit")):
+        for r, text in ((15, "  Arrows  walk"), (16, "  Space   zap"), (17, "  M       menu"), (18, "  Esc     quit")):
             put(self.scr, y + r, x, text, on_blue(WHITE, False))
+
+    def draw_menu(self, ox, oy, now):
+        title = "THE QUEST FOR THE GOLDEN CROWN"
+        put(self.scr, oy + 1, ox + (SCREEN_W - len(title)) // 2, title, color(RAINBOW[int(now * 3) % len(RAINBOW)]))
+        tip = "Pick with the arrow keys and press ENTER (or press a level's number)"
+        put(self.scr, oy + 3, ox + (SCREEN_W - len(tip)) // 2, tip, color(WHITE, False))
+        top = oy + 5
+        rows = SCREEN_H - 7
+        first = max(0, min(self.menu_pick - rows + 1, len(self.menu_items) - rows))
+        for row, i in enumerate(range(first, min(len(self.menu_items), first + rows))):
+            what, label = self.menu_items[i]
+            num = i - self.menu_levels + 1
+            tag = ("%d" % (num % 10)) if self.menu_levels <= i < self.menu_levels + 10 else " "
+            dark = what in self.boards and self.boards[what].dark
+            text = " %s  %-22s%s " % (tag, label, " (dark!)" if dark else "        ")
+            x = ox + (SCREEN_W - len(text)) // 2
+            picked = i == self.menu_pick
+            col = YELLOW if what in ("continue", "new") else (MAGENTA if dark else CYAN)
+            put(self.scr, top + row, x, text, color(col) | (curses.A_REVERSE if picked else 0))
+            if picked:
+                put(self.scr, top + row, x - 3, self.look["player"], on_blue(WHITE))
+        put(self.scr, oy + SCREEN_H - 2, ox + (SCREEN_W - 9) // 2, "Esc: quit", color(WHITE, False))
 
     def draw_box(self, ox, oy, title, lines, footer, title_color=YELLOW):
         bw = 46
