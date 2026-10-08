@@ -495,7 +495,9 @@ class Game:
         if self.won:
             if key in ("\n", "\r", curses.KEY_ENTER) and time.time() - self.won_at > 1.0:
                 if self.next_level:
-                    self.start_level(self.next_level)        # straight on to the next level
+                    self.progress["slots"].pop(str(self.next_level), None)
+                    self.write_progress()
+                    self.start_level(self.next_level)        # straight on to the start of the next level
                 else:
                     self.open_level_screen()
             return True
