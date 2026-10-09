@@ -79,6 +79,9 @@ DARK_SIGHT, LAMP_SIGHT = 4.0, 6.5   # how far you can see on a dark board, witho
 DEFAULT_INTRO = ("Walk with the ARROW keys. Walk into robots to talk to them. "
                  "Find the three keys and bring home the Golden Crown!")
 ZAP_STEP = 0.035           # seconds for a zap to move one square
+RUN_STEP = 0.12            # hold an arrow to run: one step this often (about 8 a second)
+SHOT_GAP = 0.25            # and holding SPACE zaps this often
+HELD = 0.1                 # a key back this fast is being held down, not pressed again
 LEGEND = set(" #%&~=:TO*$a+l?rbygpcRBYGPCLHEFVKQA,<>!@123456789")
 KEYS = {"r": "red", "b": "blue", "y": "yellow", "g": "green", "p": "purple", "c": "light blue"}
 DOORS = {k.upper(): k for k in KEYS}
@@ -370,6 +373,7 @@ class Game:
             self.look = FANCY
         else:
             self.look = CONSOLE if os.environ.get("KIDS_FANCY") == "1" else PLAIN
+        self.last_key, self.last_key_at, self.last_step, self.last_shot = None, 0.0, 0.0, 0.0
         self.levels = level_list()
         self.progress = self.read_progress()
         if len(self.open_levels()) > 1:
@@ -454,6 +458,10 @@ class Game:
 
     def level_key(self, key, now):
         opened = self.open_levels()
+        if key in (curses.KEY_LEFT, curses.KEY_UP, curses.KEY_RIGHT, curses.KEY_DOWN):
+            if now - self.last_step < RUN_STEP * 2:
+                return True
+            self.last_step = now
         if key in (curses.KEY_LEFT, curses.KEY_UP):
             self.level_pick = (self.level_pick - 1) % len(opened)
             self.snd.ammo()
@@ -514,7 +522,7 @@ class Game:
         self.hint_until = 0.0
 
     def save(self):
-        if self.won or self.screen != "play":
+        if self.screen != "play" or self.won:          # (nothing to save on the level screen)
             return
         data = {"board": self.board.name, "x": self.px, "y": self.py, "entry": list(self.entry),
                 "health": self.health, "ammo": self.ammo, "gems": self.gems, "score": self.score,
@@ -563,6 +571,10 @@ class Game:
         if key == "\x1b":
             self.save()
             return False
+        held = key == self.last_key and now - self.last_key_at < HELD
+        self.last_key, self.last_key_at = key, now
+        if held and key in ("\n", "\r", " ", curses.KEY_ENTER) and self.screen != "play":
+            return True                          # holding ENTER doesn't skip the movies one after another
         if self.screen == "levels":
             return self.level_key(key, now)
         if self.screen == "cut":
@@ -570,11 +582,11 @@ class Game:
                 self.cut.skip(now)
             return True
         if self.dialog:
-            if now - self.dialog[2] > 0.35:      # so a mashed key doesn't skip it unread
+            if now - self.dialog[2] > 0.35 and not held:   # not mashed or held down: let go, then press
                 self.dialog = None
             return True
         if self.won:
-            if key in ("\n", "\r", curses.KEY_ENTER) and time.time() - self.won_at > 1.0:
+            if key in ("\n", "\r", curses.KEY_ENTER) and time.time() - self.won_at > 1.0 and not held:
                 if self.next_level:
                     self.progress["slots"].pop(str(self.next_level), None)
                     self.write_progress()
@@ -584,9 +596,15 @@ class Game:
             return True
         moves = {curses.KEY_UP: (0, -1), curses.KEY_DOWN: (0, 1), curses.KEY_LEFT: (-1, 0), curses.KEY_RIGHT: (1, 0)}
         if key in moves:
+            if now - self.last_step < RUN_STEP:  # held down: run, at a steady pace
+                return True
+            self.last_step = now
             self.facing = moves[key]
             self.move(*moves[key])
         elif key == " ":
+            if now - self.last_shot < SHOT_GAP:
+                return True
+            self.last_shot = now
             self.shoot()
         elif isinstance(key, str) and now > self.hint_until:
             self.say("Walk with the ARROW keys. SPACE zaps.", CYAN, 2)
@@ -1245,7 +1263,7 @@ class Game:
         for i, line in enumerate(textwrap.wrap(self.board.title, 17)[:2]):
             put(self.scr, y + 12 + i, x + 2, line, on_blue(CYAN))
         put(self.scr, y + 15, x, "  LEVEL %d" % self.level, on_blue(YELLOW))
-        for r, text in ((17, "  Arrows  walk"), (18, "  Space   zap"), (19, "  Esc     quit")):
+        for r, text in ((17, "  Arrows  walk"), (18, "  (hold to run!)"), (19, "  Space   zap"), (20, "  Esc     quit")):
             put(self.scr, y + r, x, text, on_blue(WHITE, False))
 
     def draw_levels(self, ox, oy, now):
@@ -1380,8 +1398,13 @@ if __name__ == "__main__":
     while True:
         try:
             os.environ.setdefault("ESCDELAY", "25")   # Python 3.8 has no curses.set_escdelay
+            if os.environ.get("TERM") == "linux" and sys.stdout.isatty():
+                sys.stdout.write("\033[?8h")             # key repeat on (the kids' console has it off), so holding runs
+                sys.stdout.flush()
             curses.wrapper(main, args)
             break
         except KeyboardInterrupt:
             continue
+    if os.environ.get("TERM") == "linux" and sys.stdout.isatty():
+        sys.stdout.write("\033[?8l")                     # and back off, like the rest of the kids' console
     print("Your quest is saved. See you next time, explorer!")

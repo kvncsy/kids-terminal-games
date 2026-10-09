@@ -12,6 +12,7 @@ show up on the PICK A LEVEL screen when Quest starts.
 Every level keeps its own save.
 
   arrow keys   walk (and pick a level)
+               HOLD an arrow down to RUN!
   ENTER        play the level, or skip a movie
   SPACE        zap (you need ammo)
   Esc          saves your quest and goes back to the menu
