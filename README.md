@@ -28,7 +28,7 @@ type here > _
 | `band` | Bleep Bloop Band | A wavetable synthesizer where no note sounds wrong; each keyboard row is an instrument, with beats and 13 secrets to discover |
 | `robot` | Robot Commander | Program a robot with arrow keys; numbers make repeats (a first taste of loops) |
 | `rain` | Alphabet Rain | Type the falling letters to pop them; nobody loses |
-| `quest` | The Quest for the Golden Crown | A [ZZT](https://en.wikipedia.org/wiki/ZZT)-style adventure in five levels (Robot Town, Spooky Islands, Rainbow Kingdom, the Witches' Crown, the Whispering Forest) with ASCII movies between them: keys, doors, boulders, bridges, ghosts, leprechauns, witches, rats, crows, a hedge maze and surprise boxes. Every board is a text file you can edit |
+| `quest` | The Quest for the Golden Crown | A [ZZT](https://en.wikipedia.org/wiki/ZZT)-style adventure in five levels (Robot Town, Spooky Islands, Rainbow Kingdom, the Witches' Crown, the Whispering Forest) with ASCII movies between them: keys, doors, boulders, bridges, ghosts, leprechauns, witches, rats, crows, a hedge maze and surprise boxes. Every board is a text file, and `quest edit` opens a ZZT-style editor for them |
 | `times` | Times Tables | Big flash cards for 1–20, a lightning round, hints that break hard facts apart, and a chart that fills in as they learn |
 | `calc` | Big Calculator | Giant numbers and a fun fact about every answer |
 | `lights` | Binary Lights | Eight light bulbs that count in binary |
@@ -57,7 +57,7 @@ python3 quest.py
 ## For grown-ups
 
 - Type the hidden word `adult` at the menu to turn games on and off and set the volume from 0 to 11.
-- `band hints` lists the synthesizer's secrets. `quest check` finds mistakes after you edit Quest boards ([how to make boards](quest_boards/README.txt)).
+- `band hints` lists the synthesizer's secrets. `quest edit` opens the Quest Editor to change the boards or make new ones, and `quest check` finds mistakes ([how boards work](quest_boards/README.txt)).
 - Ctrl+C and Ctrl+Z are ignored inside the games, so little hands can't quit by accident.
 - On the Linux console, the login loads a console font with the old PC symbols (♣ ♥ ☺ Ω), so Quest looks like ZZT. Elsewhere the games pick characters the font can draw.
 - Saved progress lives in hidden files in the home folder. [`README.txt`](README.txt) lists them.

@@ -24,6 +24,7 @@ numbers, stars on finished levels. Each level keeps its own saved game.
   python3 quest.py           play (continues a saved game)
   python3 quest.py --reset   start a new quest
   python3 quest.py --check   look for mistakes in the board files
+  python3 quest.py --edit    change the boards in the Quest Editor (quest_edit.py)
   python3 quest.py --mute    no sound
 
 Set KIDS_FANCY=1 to use the classic ZZT symbols on a text console whose font has them.
@@ -60,7 +61,7 @@ except Exception:
 
 BOARD_W, BOARD_H = 60, 21
 SCREEN_W, SCREEN_H = 80, 24
-BOARD_DIR = os.path.join(HERE, "quest_boards")
+BOARD_DIR = os.environ.get("QUEST_BOARDS") or os.path.join(HERE, "quest_boards")   # (tests use a copy)
 SAVE_FILE = os.path.expanduser("~/.quest_save")
 MAX_HEALTH = 5
 LION_STEP = 0.55           # seconds between lion moves (slow, so they're easy to zap)
@@ -234,13 +235,21 @@ def load_world(level=None):
                 if target not in here:
                     problems.append("%s: the %s exit goes to %r, but level %d has no board called that"
                                     % (b.file, d, target, lv))
+                elif d in DIRS and " " not in edge_of(b, d):
+                    problems.append("%s: the %s exit needs a gap in the %s wall" % (b.file, d, d))
         if len(starts) == 1:
             problems += where_problems(here, starts[0])
     return boards, problems
 
 
-def where_problems(here, start):
-    """Check the n/s/e/w in file names (like 1-throne-nnn.txt) against where the exits really lead."""
+def edge_of(board, direction):
+    """The squares along one side of a board."""
+    g = board.grid
+    return {"north": g[0], "south": g[BOARD_H - 1], "west": [r[0] for r in g], "east": [r[BOARD_W - 1] for r in g]}[direction]
+
+
+def board_spots(here, start):
+    """Where each board of a level is from its start board: {name: (east, south, down)}."""
     spot, todo = {start.name: (0, 0, 0)}, [start.name]
     while todo:
         b = here[todo.pop(0)]
@@ -249,17 +258,27 @@ def where_problems(here, start):
                 dx, dy, dz = DIRS[d] + (0,) if d in DIRS else (0, 0, 1 if d == "down" else -1)
                 spot[target] = (spot[b.name][0] + dx, spot[b.name][1] + dy, spot[b.name][2] + dz)
                 todo.append(target)
+    return spot
+
+
+def where_name(x, y, z):
+    """(2, -1, 0) -> "nee": the "where" part of a board's file name."""
+    return "d" * z + "u" * -z + "n" * -y + "s" * y + "e" * x + "w" * -x or "start"
+
+
+def where_problems(here, start):
+    """Check the n/s/e/w in file names (like 1-throne-nnn.txt) against where the exits really lead."""
+    spot = board_spots(here, start)
     out = []
     for b in here.values():
         where = b.info.get("where", "")
         if not where or b.name not in spot:
             continue
         x, y, z = spot[b.name]
-        real = "d" * z + "u" * -z + "n" * -y + "s" * y + "e" * x + "w" * -x or "start"
         said = (where.count("e") - where.count("w"), where.count("s") - where.count("n"),
                 where.count("d") - where.count("u")) if where != "start" else (0, 0, 0)
         if said != (x, y, z):
-            out.append("%s: the name says %s, but this board is %s from the start" % (b.file, where, real))
+            out.append("%s: the name says %s, but this board is %s from the start" % (b.file, where, where_name(x, y, z)))
     return out
 
 
@@ -362,21 +381,72 @@ def on_blue(fg, bold=True):
 
 
 # ================================================================ the game
+def pick_look():
+    """ZZT's symbols where the font has them, plain ones where it doesn't."""
+    if locale.getpreferredencoding().lower().replace("-", "") != "utf8":
+        return PLAIN
+    if os.environ.get("TERM") != "linux":
+        return FANCY
+    return CONSOLE if os.environ.get("KIDS_FANCY") == "1" else PLAIN
+
+
+def glyph(L, t, now):
+    """The symbol and color for one square of the map."""
+    if t in KEYS:
+        return L["key"], color(KEY_COLORS[t])
+    if t in DOORS:
+        return L["door"], color(KEY_COLORS[DOORS[t]])
+    if t == "H":
+        return L["H"], color(WHITE, int(now * 3) % 2 == 0)
+    if t in "123456789":
+        return L["friend"], color(MAGENTA)
+    if t == "!":
+        return L["!"], color(RAINBOW[int(now * 6) % len(RAINBOW)])
+    if t == "*":
+        return L["*"], color(CYAN if int(now * 2) % 4 else WHITE)
+    if t == ":":                                     # the rainbow shimmers
+        return L[":"], color(RAINBOW[int(now * 3) % len(RAINBOW)])
+    if t == "$":
+        return L["$"], color(YELLOW if int(now * 3) % 5 else WHITE)
+    if t == "?":
+        return L["?"], color(RAINBOW[int(now * 4) % len(RAINBOW)]) | curses.A_REVERSE
+    if t == "F":
+        return L["F"], color(MAGENTA if int(now * 4) % 2 else YELLOW)
+    if t == "K":
+        return "K", color(GREEN if int(now * 2) % 3 else YELLOW)
+    if t == "Q":
+        return "Q", color(MAGENTA if int(now * 3) % 3 else WHITE)
+    if t == "&":
+        return L["&"], color(GREEN, False)
+    if t == "A":
+        return "A", color(MAGENTA if int(now * 3) % 4 else GREEN)
+    return L.get(t, t), color(COLORS.get(t, WHITE), t not in "#")
+
+
+def setup_colors(scr):
+    curses.start_color()
+    orange = 208 if curses.COLORS >= 256 else curses.COLOR_YELLOW
+    fgs = {RED: curses.COLOR_RED, YELLOW: curses.COLOR_YELLOW, GREEN: curses.COLOR_GREEN,
+           CYAN: curses.COLOR_CYAN, BLUE: curses.COLOR_BLUE, MAGENTA: curses.COLOR_MAGENTA,
+           WHITE: curses.COLOR_WHITE, ORANGE: orange}
+    for pid, fg in fgs.items():
+        curses.init_pair(pid, fg, curses.COLOR_BLACK)
+        curses.init_pair(8 + pid, fg if fg != curses.COLOR_BLUE else curses.COLOR_CYAN, curses.COLOR_BLUE)
+    scr.bkgd(" ", curses.color_pair(WHITE))
+
+
 class Game:
-    def __init__(self, scr, sounds):
+    def __init__(self, scr, sounds, trying=None):
         self.scr = scr
         self.snd = sounds
-        utf = locale.getpreferredencoding().lower().replace("-", "") == "utf8"
-        if not utf:
-            self.look = PLAIN
-        elif os.environ.get("TERM") != "linux":
-            self.look = FANCY
-        else:
-            self.look = CONSOLE if os.environ.get("KIDS_FANCY") == "1" else PLAIN
+        self.look = pick_look()
+        self.trying = trying          # (level, board) to try out a board from the editor: nothing is saved
         self.last_key, self.last_key_at, self.last_step, self.last_shot = None, 0.0, 0.0, 0.0
         self.levels = level_list()
         self.progress = self.read_progress()
-        if len(self.open_levels()) > 1:
+        if trying:
+            self.try_board(*trying)
+        elif len(self.open_levels()) > 1:
             self.open_level_screen()
         else:
             self.start_level(min(self.levels))
@@ -410,6 +480,8 @@ class Game:
         return {"unlocked": lv, "done": [v for v in self.levels if v < lv], "slots": slots}
 
     def write_progress(self):
+        if self.trying:
+            return
         try:
             with open(SAVE_FILE, "w") as f:
                 json.dump(self.progress, f)
@@ -431,6 +503,22 @@ class Game:
         self.after_cut = lambda: self.say_box("LEVEL %d: %s" % (level, name.upper()), start.intro or DEFAULT_INTRO)
         if not self.play_cut(start.info.get("opening")):
             self.after_cut()
+
+    def try_board(self, level, name):
+        """Straight onto one board, fresh, with no movie (from the editor's "try it")."""
+        self.level = level
+        self.new_game()
+        self.screen = "play"
+        self.board = self.boards.get(name, self.board)
+        b = self.board
+        if b.start:
+            self.px, self.py = b.start
+        else:                                         # no @ here: the open square nearest the middle
+            spots = [(abs(x - BOARD_W // 2) + abs(y - BOARD_H // 2), x, y)
+                     for y in range(BOARD_H) for x in range(BOARD_W) if b.at(x, y) == " "]
+            _, self.px, self.py = min(spots) if spots else (0, BOARD_W // 2, BOARD_H // 2)
+        self.entry = (self.px, self.py)
+        self.say_box("Trying out: " + b.title, "This is just a try: nothing is saved. Esc goes back to the editor.")
 
     def play_cut(self, name):
         """Start a cutscene; False if there isn't one."""
@@ -522,7 +610,7 @@ class Game:
         self.hint_until = 0.0
 
     def save(self):
-        if self.screen != "play" or self.won:          # (nothing to save on the level screen)
+        if self.screen != "play" or self.won or self.trying:   # (nothing to save on the level screen)
             return
         data = {"board": self.board.name, "x": self.px, "y": self.py, "entry": list(self.entry),
                 "health": self.health, "ammo": self.ammo, "gems": self.gems, "score": self.score,
@@ -587,6 +675,8 @@ class Game:
             return True
         if self.won:
             if key in ("\n", "\r", curses.KEY_ENTER) and time.time() - self.won_at > 1.0 and not held:
+                if self.trying:
+                    return False                             # back to the editor
                 if self.next_level:
                     self.progress["slots"].pop(str(self.next_level), None)
                     self.write_progress()
@@ -1135,36 +1225,7 @@ class Game:
 
     # ------------------------------------------------------------ drawing
     def glyph(self, t, now):
-        L = self.look
-        if t in KEYS:
-            return L["key"], color(KEY_COLORS[t])
-        if t in DOORS:
-            return L["door"], color(KEY_COLORS[DOORS[t]])
-        if t == "H":
-            return L["H"], color(WHITE, int(now * 3) % 2 == 0)
-        if t in "123456789":
-            return L["friend"], color(MAGENTA)
-        if t == "!":
-            return L["!"], color(RAINBOW[int(now * 6) % len(RAINBOW)])
-        if t == "*":
-            return L["*"], color(CYAN if int(now * 2) % 4 else WHITE)
-        if t == ":":                                     # the rainbow shimmers
-            return L[":"], color(RAINBOW[int(now * 3) % len(RAINBOW)])
-        if t == "$":
-            return L["$"], color(YELLOW if int(now * 3) % 5 else WHITE)
-        if t == "?":
-            return L["?"], color(RAINBOW[int(now * 4) % len(RAINBOW)]) | curses.A_REVERSE
-        if t == "F":
-            return L["F"], color(MAGENTA if int(now * 4) % 2 else YELLOW)
-        if t == "K":
-            return "K", color(GREEN if int(now * 2) % 3 else YELLOW)
-        if t == "Q":
-            return "Q", color(MAGENTA if int(now * 3) % 3 else WHITE)
-        if t == "&":
-            return L["&"], color(GREEN, False)
-        if t == "A":
-            return "A", color(MAGENTA if int(now * 3) % 4 else GREEN)
-        return L.get(t, t), color(COLORS.get(t, WHITE), t not in "#")
+        return glyph(self.look, t, now)
 
     def draw(self, now):
         scr = self.scr
@@ -1342,18 +1403,10 @@ def main(scr, args):
         curses.set_escdelay(25)
     except AttributeError:
         pass
-    curses.start_color()
-    orange = 208 if curses.COLORS >= 256 else curses.COLOR_YELLOW
-    fgs = {RED: curses.COLOR_RED, YELLOW: curses.COLOR_YELLOW, GREEN: curses.COLOR_GREEN,
-           CYAN: curses.COLOR_CYAN, BLUE: curses.COLOR_BLUE, MAGENTA: curses.COLOR_MAGENTA,
-           WHITE: curses.COLOR_WHITE, ORANGE: orange}
-    for pid, fg in fgs.items():
-        curses.init_pair(pid, fg, curses.COLOR_BLACK)
-        curses.init_pair(8 + pid, fg if fg != curses.COLOR_BLUE else curses.COLOR_CYAN, curses.COLOR_BLUE)
-    scr.bkgd(" ", curses.color_pair(WHITE))
+    setup_colors(scr)
 
     sounds = Sounds(not args.mute)
-    game = Game(scr, sounds)
+    game = Game(scr, sounds, args.try_board and (int(args.try_board[0]), args.try_board[1]))
     try:
         while True:
             t0 = time.time()
@@ -1379,7 +1432,12 @@ if __name__ == "__main__":
     p.add_argument("--reset", action="store_true", help="start a new quest")
     p.add_argument("--check", action="store_true", help="look for mistakes in the board files")
     p.add_argument("--mute", action="store_true", help="run without sound")
+    p.add_argument("--edit", action="store_true", help="change the boards in the Quest Editor")
+    p.add_argument("--try", nargs=2, metavar=("LEVEL", "BOARD"), dest="try_board",
+                   help="play one board straight away, saving nothing (the editor uses this)")
     args = p.parse_args()
+    if args.edit:
+        os.execvp(sys.executable, [sys.executable, os.path.join(HERE, "quest_edit.py")])
     if args.reset:
         try:
             os.remove(SAVE_FILE)
@@ -1407,4 +1465,5 @@ if __name__ == "__main__":
             continue
     if os.environ.get("TERM") == "linux" and sys.stdout.isatty():
         sys.stdout.write("\033[?8l")                     # and back off, like the rest of the kids' console
-    print("Your quest is saved. See you next time, explorer!")
+    if not args.try_board:
+        print("Your quest is saved. See you next time, explorer!")

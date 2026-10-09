@@ -34,6 +34,7 @@ The Leprechaun King (K) wants gold. Queen Maeve (Q) wants the crown.
 # STARTING OVER
   quest reset  starts over from Level 1 (all levels lock again)
   quest check  looks for mistakes in the board files
+  quest edit   the Quest Editor: change the boards or make new ones
 
 # MAKE YOUR OWN WORLD
 Every place in the quest is a text file in the quest_boards folder.

@@ -1,6 +1,11 @@
 MAKING QUEST BOARDS
 ===================
 
+The easy way: type  quest edit  (or run python3 quest_edit.py). Move the
+cursor with the arrows and type a symbol to put it on the map; Ctrl+E has a
+board's settings and Ctrl+T tries it out. The editor names the files and
+keeps a copy of every board it changes in the old/ folder.
+
 Every place in the Quest is one text file in this folder. Boards are grouped
 into levels (1 is Robot Town, 2 is Spooky Islands, 3 is Rainbow Kingdom,
 4 is the Witches' Crown, 5 is the Whispering Forest). Each level starts on the board with the @ in it.

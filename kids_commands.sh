@@ -53,7 +53,7 @@ keys()   { kids_program hacker_keys.py     keys   ""      "$@"; }
 band()   { kids_program bleep_bloop.py     band   "hints" "$@"; }
 robot()  { kids_program robot_commander.py robot  ""      "$@"; }
 rain()   { kids_program letter_rain.py     rain   ""      "$@"; }
-quest()  { kids_program quest.py           quest  "check" "$@"; }
+quest()  { kids_program quest.py           quest  "check edit" "$@"; }
 times()  { kids_program times_tables.py    times  ""      "$@"; }
 calc()   { kids_program big_calc.py        calc   ""      "$@"; }
 lights() { kids_program binary_lights.py   lights ""      "$@"; }
