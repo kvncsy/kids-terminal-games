@@ -81,5 +81,7 @@ GOOD TO KNOW
     ~/.robot_pet              the robot pet (its name, age, battery and words)
     ~/.castle_cannons         level reached in Castle Cannons ("castle reset")
     ~/.ski_hill               best ski run ("ski reset")
-- On a console font that has the classic symbols (a smiley, hearts,
-  diamonds), add  export KIDS_FANCY=1  to ~/.bashrc for the full ZZT look in Quest.
+- At login on the console, kids.bashrc loads the FullGreek-TerminusBold font
+  (in the size console-setup uses), which has the classic PC symbols: a
+  smiley, hearts, clubs for trees. Then Quest gets the full ZZT look.
+  To go back to plain letters, take "kids_font;" out of kids.bashrc.

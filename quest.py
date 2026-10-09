@@ -92,10 +92,14 @@ RAINBOW = [RED, ORANGE, YELLOW, GREEN, CYAN, BLUE, MAGENTA]
 # how each thing looks: classic ZZT symbols, and plain ones for a small console font
 FANCY = {"#": "█", "%": "▒", "~": "≈", "=": "═", ":": "░", "T": "♣", "O": "■", "*": "♦", "$": "$", "a": "ä",
          "+": "♥", "L": "Ω", "H": "Ö", "E": "¥", "F": "ƒ", "?": "?", "l": "☼", "!": "♛",
-         "&": "▓", "V": "v", "K": "K", "Q": "Q", "A": "A", ",": ",", ">": "▼", "<": "▲", "key": "♀", "door": "◘", "friend": "☻", "player": "☺", "heart": "♥"}
+         "&": "▓", "V": "v", "K": "K", "Q": "Q", "A": "A", ",": ",", ">": "▼", "<": "▲",
+         "key": "♀", "door": "◘", "friend": "☻", "player": "☺", "heart": "♥", "star": "★"}
 PLAIN = {"#": "█", "%": "%", "~": "~", "=": "=", ":": ":", "T": "T", "O": "O", "*": "*", "$": "$", "a": "a",
          "+": "+", "L": "L", "H": "G", "E": "E", "F": "F", "?": "?", "l": "i", "!": "W",
-         "&": "#", "V": "v", "K": "K", "Q": "Q", "A": "A", ",": ",", ">": ">", "<": "<", "key": "k", "door": "▒", "friend": "&", "player": "@", "heart": "+"}
+         "&": "#", "V": "v", "K": "K", "Q": "Q", "A": "A", ",": ",", ">": ">", "<": "<",
+         "key": "k", "door": "▒", "friend": "&", "player": "@", "heart": "+", "star": "*"}
+# the Linux console with the kids' font (KIDS_FANCY=1, see kids.bashrc): the old PC symbols, but no star or crown
+CONSOLE = dict(FANCY, **{"!": "W", "star": "*"})
 COLORS = {"#": WHITE, "%": YELLOW, "~": BLUE, "=": ORANGE, "T": GREEN, "O": MAGENTA, "*": CYAN, "$": YELLOW,
           "a": CYAN, "+": RED, "L": RED, "H": WHITE, "E": GREEN, "F": MAGENTA, "?": MAGENTA, "l": YELLOW, "!": YELLOW,
           "&": GREEN, "V": WHITE, "K": GREEN, "Q": MAGENTA, "A": MAGENTA, ",": ORANGE, ">": CYAN, "<": CYAN}
@@ -360,8 +364,12 @@ class Game:
         self.scr = scr
         self.snd = sounds
         utf = locale.getpreferredencoding().lower().replace("-", "") == "utf8"
-        fancy = utf and (os.environ.get("TERM") != "linux" or os.environ.get("KIDS_FANCY") == "1")
-        self.look = FANCY if fancy else PLAIN
+        if not utf:
+            self.look = PLAIN
+        elif os.environ.get("TERM") != "linux":
+            self.look = FANCY
+        else:
+            self.look = CONSOLE if os.environ.get("KIDS_FANCY") == "1" else PLAIN
         self.levels = level_list()
         self.progress = self.read_progress()
         if len(self.open_levels()) > 1:
@@ -426,7 +434,7 @@ class Game:
             return False
         h, w = self.scr.getmaxyx() if self.scr else (SCREEN_H, SCREEN_W)
         self.cut = quest_scenes.Cutscene(name, self.scr, (w - SCREEN_W) // 2, max(0, (h - SCREEN_H) // 2),
-                                         self.look is FANCY, self.snd, time.time())
+                                         self.look is not PLAIN, self.snd, time.time())
         self.screen = "cut"
         return True
 
@@ -1172,7 +1180,7 @@ class Game:
                 ch, a = self.glyph(t, now)
                 put(scr, oy + y, ox + x, ch, a)
         for x, y, dx, dy in self.zaps:
-            put(scr, oy + y, ox + x, "•" if self.look is FANCY else ("-" if dx else "|"), color(WHITE))
+            put(scr, oy + y, ox + x, "•" if self.look is not PLAIN else ("-" if dx else "|"), color(WHITE))
         dt = min(0.1, now - getattr(self, "last_draw", now))
         self.last_draw = now
         for p in self.parts:                             # sparkles
@@ -1251,7 +1259,7 @@ class Game:
             cards = cards[first:first + 5]
         cw, gap = 14, 2
         x0 = ox + (SCREEN_W - (len(cards) * (cw + gap) - gap)) // 2
-        star = "*" if self.look is PLAIN else "★"
+        star = self.look["star"]
         for i, lv in enumerate(cards):
             x, y = x0 + i * (cw + gap), oy + 4
             locked = lv not in opened
@@ -1264,7 +1272,7 @@ class Game:
             put(self.scr, y + 10, x, "+" + "-" * (cw - 2) + "+", a)
             glyph = BIG_DIGITS.get("?" if locked else str(lv % 10), BIG_DIGITS["?"])
             for r, row in enumerate(glyph):                   # a big number
-                put(self.scr, y + 2 + r, x + (cw - 10) // 2, row.replace("#", "██" if self.look is FANCY else "##").replace(" ", "  "),
+                put(self.scr, y + 2 + r, x + (cw - 10) // 2, row.replace("#", "██" if self.look is not PLAIN else "##").replace(" ", "  "),
                     color(WHITE if locked else RAINBOW[(lv * 2) % len(RAINBOW)], not locked))
             if lv in self.progress["done"]:
                 put(self.scr, y + 8, x + (cw - 5) // 2, (star + " ") * 3, color(YELLOW))

@@ -59,7 +59,7 @@ python3 quest.py
 - Type the hidden word `adult` at the menu to turn games on and off and set the volume from 0 to 11.
 - `band hints` lists the synthesizer's secrets. `quest check` finds mistakes after you edit Quest boards ([how to make boards](quest_boards/README.txt)).
 - Ctrl+C and Ctrl+Z are ignored inside the games, so little hands can't quit by accident.
-- On the plain Linux console the games switch to characters the console font can draw.
+- On the Linux console, the login loads a console font with the old PC symbols (♣ ♥ ☺ Ω), so Quest looks like ZZT. Elsewhere the games pick characters the font can draw.
 - Saved progress lives in hidden files in the home folder. [`README.txt`](README.txt) lists them.
 
 ## Requirements
