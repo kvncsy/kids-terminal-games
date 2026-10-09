@@ -382,6 +382,10 @@ class Game:
         data.setdefault("unlocked", min(self.levels))
         data.setdefault("done", [])
         data.setdefault("slots", {})
+        for lv in data["done"]:                               # a level added after you won the one before it
+            later = [n for n in self.levels if n > lv]
+            if later:
+                data["unlocked"] = max(data["unlocked"], later[0])
         return data
 
     def old_save(self, data):
@@ -1242,7 +1246,10 @@ class Game:
         put(self.scr, oy + 1, ox + (SCREEN_W - len(title)) // 2, title, color(RAINBOW[int(now * 3) % len(RAINBOW)]))
         opened = self.open_levels()
         cards = opened + [lv for lv in self.levels if lv > max(opened)][:1]   # and the next locked one
-        cw, gap = 16, 2
+        if len(cards) > 5:                                    # only five fit: slide along with the pick
+            first = min(max(0, self.level_pick - 2), len(cards) - 5)
+            cards = cards[first:first + 5]
+        cw, gap = 14, 2
         x0 = ox + (SCREEN_W - (len(cards) * (cw + gap) - gap)) // 2
         star = "*" if self.look is PLAIN else "★"
         for i, lv in enumerate(cards):
@@ -1257,14 +1264,15 @@ class Game:
             put(self.scr, y + 10, x, "+" + "-" * (cw - 2) + "+", a)
             glyph = BIG_DIGITS.get("?" if locked else str(lv % 10), BIG_DIGITS["?"])
             for r, row in enumerate(glyph):                   # a big number
-                put(self.scr, y + 2 + r, x + 3, row.replace("#", "██" if self.look is FANCY else "##").replace(" ", "  "),
+                put(self.scr, y + 2 + r, x + (cw - 10) // 2, row.replace("#", "██" if self.look is FANCY else "##").replace(" ", "  "),
                     color(WHITE if locked else RAINBOW[(lv * 2) % len(RAINBOW)], not locked))
             if lv in self.progress["done"]:
                 put(self.scr, y + 8, x + (cw - 5) // 2, (star + " ") * 3, color(YELLOW))
             elif str(lv) in self.progress["slots"]:
                 put(self.scr, y + 8, x + 2, "playing...".center(cw - 4), color(GREEN))
             name = "?" if locked else self.levels[lv][0]
-            put(self.scr, y + 11, x + (cw - len(name[:cw + gap])) // 2, name[:cw + gap], color(WHITE if locked else col))
+            for r, line in enumerate(textwrap.wrap(name, cw)[:2]):        # long names get two lines
+                put(self.scr, y + 11 + r, x + (cw - len(line)) // 2, line, color(WHITE if locked else col))
             if picked:
                 put(self.scr, y + 13, x + cw // 2 - 1, self.look["player"], on_blue(WHITE))
         tip = "ARROWS pick a level, ENTER plays it"
