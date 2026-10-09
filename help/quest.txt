@@ -1,9 +1,12 @@
 # THE QUEST FOR THE GOLDEN CROWN    (type: quest)
 
-Three big adventures, one after another:
+Five big adventures, one after another:
   LEVEL 1  Robot Town       find the Golden Crown
   LEVEL 2  Spooky Islands   find the Ghost's Treasure
   LEVEL 3  Rainbow Kingdom  find the Pot of Gold
+  LEVEL 4  Witches' Crown    go down, down, down to find it
+  LEVEL 5  Whispering Forest  trade gold for the crown, and
+                              bring it to Queen Maeve
 Win a level and the next one opens. Levels you have opened
 show up on the PICK A LEVEL screen when Quest starts.
 Every level keeps its own save.
@@ -22,6 +25,10 @@ Ghosts say BOO and send you back. Zap them!
 Leprechauns run away. Catch one (or zap it) for gold!
 Fairies give you back your hearts.
 A ? box is a surprise. Open it and see!
+Crows fly away when you come close. WHOOSH!
+Witches go POOF and leave you zaps. Rats nibble your gold:
+step on them! Walk onto a > to go down, and a < to go up.
+The Leprechaun King (K) wants gold. Queen Maeve (Q) wants the crown.
 
 # STARTING OVER
   quest reset  starts over from Level 1 (all levels lock again)

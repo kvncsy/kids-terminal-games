@@ -2,10 +2,19 @@ MAKING QUEST BOARDS
 ===================
 
 Every place in the Quest is one text file in this folder. Boards are grouped
-into levels (level 1 is Robot Town, 2 is Spooky Islands, 3 is Rainbow
-Kingdom). Each level starts on the board with the @ in it. Change a board,
-or copy one to make a new place, then run "quest check" to look for
-mistakes.
+into levels (1 is Robot Town, 2 is Spooky Islands, 3 is Rainbow Kingdom,
+4 is the Witches' Crown, 5 is the Whispering Forest). Each level starts on the board with the @ in it.
+Change a board, or copy one to make a new place, then run "quest check" to
+look for mistakes.
+
+FILE NAMES
+  1-town-start.txt   level - name - where
+  1-forest-n.txt     the forest in level 1, one board north of the start
+  2-house-nee.txt    the house in level 2: north, then two east
+  4-well-ddd.txt     the well in level 4: down, down, down from the start
+  The name is what exits use ("north: forest"). Two levels can both have a
+  "forest". The "where" is just a reminder for you; "quest check" tells you
+  if it doesn't match the exits.
 
 A board file looks like this:
 
@@ -18,12 +27,12 @@ A board file looks like this:
     #        1         #  ...
 
   title:              the name shown in the sidebar
-  level: 2            which level the board belongs to (leave it out for
-                      level 1). Exits only lead to boards of the same level.
+  down: / up:         which board the > (or <) on this board leads to
+  box: y              (optional) the ? box on this board hides this key
   north: / south: / east: / west:
                       which board you reach by walking off that edge
                       (leave a gap in the wall there, and a matching gap
-                      on the other board)
+                      on the other board; only boards in the same level)
   dark: yes           (optional) the board is dark: you only see near you
                       (more with the lamp), but ghosts can always be seen
   These go on a level's start board (the one with the @):
@@ -31,7 +40,8 @@ A board file looks like this:
   goal:               what the ! is ("the Ghost's Treasure")
   intro:              the words in the box when the level starts
   opening: / ending:  the movie played at the start and at the end
-                      (town, crown, ship, ghosts, rainbow, rainbow_end;
+                      (town, crown, ship, ghosts, rainbow, rainbow_end,
+                      thief, home, witches, moon;
                       they live in quest_scenes.py)
 
   1: to 9:            what robot 1 to 9 on the map says ("Name: words")
@@ -42,6 +52,7 @@ MAP SYMBOLS
   @        where the player starts (one per level, on its start board)
   (space)  empty ground
   #        wall
+  &        hedge (a green wall)
   %        weak wall (zap it to break it)
   ~        water (zaps fly over it; push a boulder in to make a bridge)
   =        bridge (walk on it over water)
@@ -61,6 +72,13 @@ MAP SYMBOLS
   H        ghost (says BOO and sends you back to where you came in)
   E        leprechaun (runs away; catch or zap it for gold)
   F        fairy (bump it to fill your hearts)
+  V        crow (the flock flies away when you come close)
+  K        the Leprechaun King (trades the Golden Crown for 15 gold)
+  Q        Queen Maeve (bring her the crown to win the level)
+  A        a witch (vanishes when you come close, and leaves ammo)
+  ,        a rat (fast! nibbles your gold or gems; step on it)
+  >        a way down (stairs, a hole, a well)
+  <        the way back up
   1 to 9   a robot who talks
   !        the level's goal (walk onto it to win the level)
 

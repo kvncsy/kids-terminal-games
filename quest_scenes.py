@@ -153,10 +153,39 @@ LEPRECHAUN = [["  _===_ ", "  (^o^) ", " /|[]|\\ ", "  d  b  "], ["  _===_ ", " 
 POT = ["  $ $ $ $  ", " ($$$$$$$) ", "  \\_____/  "]
 FAIRY = [[" \\ * / ", "  (o)  ", " / | \\ "], [" / * \\ ", "  (o)  ", " \\ | / "]]
 MOON = ["  _.._ ", " .' .-'", "/  /   ", "|  |   ", "\\  '.__", " '._  '", "    `''"]
+KING_SLEEP = ["   \\|/   ", "  [-_-]  ", " /|___|\\ ", "  _| |_  "]
+KING_BARE = ["         ", "  [O_O]  ", " /|___|\\ ", "  _| |_  "]
+KING_HAPPY = ["   \\|/   ", "  [^o^]  ", " \\|___|/ ", "  _| |_  "]
+LEP_KING = [["   *.*.*  ", "  _=====_ ", "   (^o^)  ", "  /|[]|\\  ", "   d  b   "],
+            ["   *.*.*  ", "  _=====_ ", "   (^o^)  ", "  \\|[]|/  ", "    db    "]]
+QUEEN = [["     *.*.*     ", "    ( ^_^ )    ", " <\\  /|~|\\  /> ", "  <\\/ ~~~ \\/>  ", "     /~~~~\\    ", "    /______\\   "],
+         ["     *.*.*     ", "    ( ^_^ )    ", "  </ /|~|\\ \\>  ", " </  / ~~~ \\  \\>", "     /~~~~\\    ", "    /______\\   "]]
+TREE = ["  .@@@.  ", " @@@@@@@ ", "@@@@@@@@@", " '@@@@@' ", "   | |   ", "   |_|   "]
+CROW = ["\\v/", "-v-"]
+JEN = ["  ,~~~~~,  ", " ( (^_^) ) ", " ) /|_|\\ ( ", "   / | \\   "]
+JEN_WRITE = ["  ,~~~~~,  ", " ( (^_^) ) ", " ) /|_|\\_( ", "   / |  ~\\ "]
+DESK = ["=" * 42, " ||" + " " * 36 + "|| ", " ||" + " " * 36 + "|| "]
+BOOK = [" ________ ________ ", "|~~~~~~~ |~~~~~   |", "|~~~~~ ~ |~~~~~~~ |", "|~~~~~~  |~~~     |", "|________|________|"]
+WITCH = [["    /\\    ", "   /  \\   ", " _/____\\_ ", "  (o.o)   ", "  /|##|\\  ", "   /__\\   "],
+         ["    /\\    ", "   /  \\   ", " _/____\\_ ", "  (^o^)   ", "  \\|##|/  ", "   /__\\   "]]
+WITCH_BROOM = [["    /\\       ", "  _/__\\_     ", "   (^.^)     ", "---/##\\---}}}"],
+               ["    /\\       ", "  _/__\\_     ", "   (^o^)     ", "---/##\\---{{{"]]
+CAULDRON = ["  o  O   o  ", " .~~~~~~~~. ", "(__________)", "  ||    ||  "]
+WITCH_HOUSE = ["      /\\      ", "     /  \\     ", "    / /\\ \\    ", "   /______\\   ", "   | [] []|   ",
+               "   |  __  |   ", "   |_|__|_|   "]
+RAT = ["<:3)~", "<:3)-"]
+WINDOW = ["+-------+", "|   |   |", "|---+---|", "|   |   |", "+-------+"]
 
 HERO_COL = {"^": WHITE, "_": WHITE, "(": WHITE, ")": WHITE, "default": YELLOW}
 ROBOT_COL = {"o": WHITE, "^": WHITE, "[": WHITE, "]": WHITE, "_": WHITE, "default": ORANGE}
 GHOST_COL = {"o": CYAN, "O": CYAN, "^": CYAN, "v": CYAN, "default": WHITE}
+QUEEN_COL = {"*": YELLOW, ".": YELLOW, "<": CYAN, ">": CYAN, "^": WHITE, "_": WHITE, "(": WHITE, ")": WHITE,
+             "default": MAGENTA}
+TREE_COL = {"|": ORANGE, "_": ORANGE, "default": GREEN}
+JEN_COL = {"~": ORANGE, ",": ORANGE, "(": ORANGE, ")": ORANGE, "^": WHITE, "_": WHITE, "default": MAGENTA}
+BOOK_COL = {"~": BLUE, "default": WHITE}
+WITCH_COL = {"/": MAGENTA, "\\": MAGENTA, "_": MAGENTA, "o": GREEN, ".": GREEN, "^": GREEN, "(": GREEN, ")": GREEN,
+             "#": MAGENTA, "-": ORANGE, "}": YELLOW, "{": YELLOW, "default": MAGENTA}
 LEP_COL = {"=": GREEN, "_": GREEN, "^": WHITE, "o": WHITE, "(": WHITE, ")": WHITE, "[": YELLOW, "]": YELLOW,
            "default": GREEN}
 
@@ -373,7 +402,10 @@ def ending_rainbow(stage):
         s.stars(now, 60)
         s.text(10, "...or is it?", CYAN)
         if t > .4:
-            s.text(13, "Keep exploring. Find every gem. Catch every leprechaun!", WHITE, False)
+            s.text(13, "Far away, the witches are very upset...", WHITE, False)
+        if t > .7:
+            s.art(15, 35, WITCH[bob(now, 3)], WITCH_COL)
+            s.text(22, "NEXT: THE WITCHES' CROWN", MAGENTA)
 
     return [(5.0, gold, lambda s, now: s.snd.melody("gold")),
             (6.0, parade, lambda s, now: s.snd.melody("march")),
@@ -381,8 +413,286 @@ def ending_rainbow(stage):
             (3.5, or_is_it, lambda s, now: s.snd.melody("quest"))]
 
 
+def crows(s, now, n=7, y0=2, seed=3, speed=9):
+    """A flock of crows flapping across the sky."""
+    rng = random.Random(seed)
+    for i in range(n):
+        x = (rng.uniform(0, 80) + now * speed * rng.uniform(.8, 1.2)) % 90 - 5
+        y = y0 + rng.randrange(5) + bob(now + i, 3)
+        s.put(y, x, CROW[bob(now * 2 + i, 3)], s.attr(WHITE, False))
+
+
+def opening_thief(stage):
+    """Level 4: a leprechaun sneaks off with the Robot King's crown, into the Whispering Forest."""
+    def night(s, t, now):
+        s.stars(now, 50)
+        s.art(1, 68, MOON, YELLOW)
+        s.art(9, 35, THRONE, MAGENTA)
+        s.art(7, 35, KING_SLEEP, ROBOT_COL)
+        for i in range(3):                              # z z Z float up
+            zt = (now * .6 + i / 3.0) % 1
+            s.put(6 - zt * 5, 44 + i * 2 + zt * 4, "zZ"[i % 2], s.attr(CYAN))
+        s.text(15, "-" * 78, BLUE, False)
+        s.typed(18, "Night in Robot Town. The Robot King is fast asleep...", t * 2, CYAN)
+
+    def sneak(s, t, now):
+        s.stars(now, 50)
+        s.art(9, 35, THRONE, MAGENTA)
+        grabbed = t > .45
+        s.art(7, 35, KING_BARE if grabbed else KING_SLEEP, ROBOT_COL)
+        if t < .45:
+            x = -8 + t / .45 * 37                        # tiptoe in...
+        else:
+            x = 29 + (t - .45) / .55 * 60                # ...and RUN!
+            s.art(7 + bob(now, 6), int(x) + 2, CROWN_SMALL, YELLOW)
+        s.art(9 + bob(now, 6 if grabbed else 2), int(x), LEPRECHAUN[bob(now, 8 if grabbed else 2)], LEP_COL)
+        s.text(15, "-" * 78, BLUE, False)
+        if grabbed:
+            s.text(18, "Hee hee hee!", GREEN)
+        else:
+            s.text(18, "Tip... toe... tip... toe...", GREEN, False)
+
+    def wake(s, t, now):
+        s.art(9, 35, THRONE, MAGENTA)
+        s.art(7 - bob(now, 8), 35, KING_BARE, ROBOT_COL)
+        s.big("MY CROWN!", 0, colors=lambda i: RED if bob(now + i, 6) else YELLOW)
+        for i in range(4):
+            s.art(16, 4 + i * 20, ROBOT[0], ROBOT_COL)
+        s.typed(21, "A leprechaun took the Golden Crown! Who can help?", t * 2, YELLOW)
+
+    def forest(s, t, now):
+        for i in range(8):
+            s.art(10, -2 + i * 11, TREE, TREE_COL)
+        s.big("FOREST", 0, colors=lambda i: GREEN if bob(now + i, 2) else CYAN)
+        x = -4 + t * 42
+        s.art(17, int(x), HERO_WALK if int(now * 6) % 2 else HERO, HERO_COL)
+        if t > .4:                                      # the crows see the hero and WHOOSH
+            crows(s, now, 9, 6 - int((t - .4) * 10), speed=20)
+        else:
+            for i in range(6):
+                s.put(9, 8 + i * 11, CROW[0], s.attr(WHITE, False))
+        s.typed(22, "Into the Whispering Forest! Bring GOLD for the Leprechaun King.", (t - .3) * 2, YELLOW)
+
+    return [(4.5, night, lambda s, now: s.snd.melody("night")),
+            (4.5, sneak, lambda s, now: s.snd.melody("sneak")),
+            (3.5, wake, lambda s, now: s.snd.melody("boo")),
+            (5.0, forest, lambda s, now: s.snd.melody("forest"))]
+
+
+def ending_home(stage):
+    """Level 4 won: Queen Maeve sends the crown home, and the hero goes home too... it's Jennifer!"""
+    def queen(s, t, now):
+        s.art(3, 32, QUEEN[bob(now, 3)], QUEEN_COL)
+        s.art(16, 20, HERO, HERO_COL)
+        for i, fx in enumerate((6, 58, 70)):
+            s.art(4 + bob(now + i, 3), fx, FAIRY[bob(now + i, 4)], {"*": YELLOW, "default": MAGENTA})
+        y = 15 - t * 6                                   # the crown floats up to the Queen
+        s.art(int(y), int(20 + t * 17), CROWN_SMALL, YELLOW)
+        if bob(now, 5):
+            s.burst(39, y, 3, [MAGENTA, YELLOW, WHITE], now, "*+.")
+        if t > .5:
+            s.typed(20, "Thank you! Fairy magic... take this crown HOME!", (t - .5) * 3, MAGENTA)
+
+    def fly(s, t, now):
+        s.stars(now, 40)
+        for i in range(8):
+            s.art(16, -2 + i * 11, TREE, TREE_COL)
+        x, y = -6 + t * 90, 9 - math.sin(t * math.pi) * 6
+        s.art(int(y), int(x), CROWN_SMALL, YELLOW)
+        s.burst(x, y + 1, 2, RAINBOW, now, "*+.", 6)
+        crows(s, now, 6, 3, seed=9, speed=14)
+        s.text(1, "WHOOSH! Over the forest, over the hills...", CYAN, False)
+
+    def crowned(s, t, now):
+        s.art(4, 35, THRONE, MAGENTA)
+        on = t > .45
+        s.art(2, 35, KING_HAPPY if on else KING_BARE, ROBOT_COL)
+        if not on:
+            s.art(int(-2 + t / .45 * 2.5), 37, CROWN_SMALL, YELLOW)
+        else:
+            s.fireworks(now, .5)
+        for i in range(4):
+            s.art(10, 2 + i * 9, ROBOT[bob(now * 2 + i) if on else 0], ROBOT_COL)
+            s.art(10, 45 + i * 9, ROBOT[bob(now * 2 + i + 1) if on else 0], ROBOT_COL)
+        if on:
+            s.big("HOORAY!", 15, now=now)
+
+    def walk_home(s, t, now):
+        s.art(int(9 + t * 3), 64, SUN, ORANGE)           # the sun sets
+        s.art(11, 60, HOUSE, {"[": YELLOW, "]": YELLOW, "default": RED})
+        s.text(16, "~" * 78, GREEN, False)
+        x = 4 + t * 52
+        s.art(12, int(x), HERO_WALK if int(now * 5) % 2 else HERO, HERO_COL)
+        s.typed(19, "The sun goes down. Time to go home...", t * 2, ORANGE)
+
+    def jennifer(s, t, now):
+        s.art(2, 60, WINDOW, BLUE)
+        s.put(3, 62, "*", s.attr(WHITE))
+        s.put(4, 66, "C", s.attr(YELLOW))
+        s.art(9, 16, JEN_WRITE if bob(now, 3) else JEN, JEN_COL)
+        s.art(12, 6, DESK, ORANGE)
+        s.art(7, 29, BOOK, BOOK_COL)
+        if t > .25:
+            s.big("JENNIFER", 0, x=4, now=now)
+            s.typed(17, "Hi! I'm JENNIFER. I'm 14 years old.", (t - .25) * 3, YELLOW)
+        if t > .55:
+            s.typed(19, "I was the hero all along!", (t - .55) * 4, MAGENTA)
+        if t > .75:
+            s.typed(21, "And I LOVE writing in my journal.", (t - .75) * 5, CYAN)
+
+    def journal(s, t, now):
+        page = ["Dear Journal,",
+                "Today I chased a sneaky leprechaun",
+                "through the Whispering Forest.",
+                "Crows went WHOOSH! I found a lamp,",
+                "a hedge maze, and a dark dark cave.",
+                "I gave GOLD to the Leprechaun King,",
+                "and the crown to Queen Maeve.",
+                "Now the Robot King has his crown!",
+                "What an adventure!   -- Jennifer"]
+        for y in range(1, 22):
+            s.put(y, 16, "|" + " " * 46 + "|", s.attr(WHITE))
+        s.put(0, 16, "+" + "-" * 46 + "+", s.attr(WHITE))
+        s.put(22, 16, "+" + "-" * 46 + "+", s.attr(WHITE))
+        for y in range(3, 21, 2):
+            s.put(y, 18, "-" * 44, s.attr(BLUE, False))
+        shown = t * 1.25 * sum(len(l) + 4 for l in page)
+        for i, line in enumerate(page):
+            n = int(max(0, min(len(line), shown)))
+            shown -= len(line) + 4
+            last = i in (0, len(page) - 1)
+            s.put(2 + i * 2, 20, line[:n], s.attr(MAGENTA if last else WHITE, last))   # writing sits on the lines
+        if t > .9:
+            s.put(20, 56, "<3", s.attr(RED))
+
+    def the_end(s, t, now):
+        s.fireworks(now, .35)
+        s.big("THE END", 1, now=now)
+        cast = [(JEN, JEN_COL, 4), (QUEEN[bob(now, 3)][:4], QUEEN_COL, 4), (KING_HAPPY, ROBOT_COL, 4),
+                (LEP_KING[bob(now, 3)][1:], LEP_COL, 4), (FAIRY[bob(now, 4)], {"*": YELLOW, "default": MAGENTA}, 5)]
+        x = 2
+        for i, (a, col, _) in enumerate(cast):
+            s.art(10 + bob(now * 2 + i, 2), x, a, col)
+            if a is KING_HAPPY:
+                s.art(8 + bob(now * 2 + i, 2), x + 2, CROWN_SMALL, YELLOW)     # the King wears his crown
+            x += max(len(r) for r in a) + 4
+        crows(s, now, 5, 16, seed=12, speed=12)
+        s.text(21, "Thank you for playing, hero!", YELLOW)
+
+    return [(5.0, queen, lambda s, now: s.snd.melody("crown")),
+            (4.0, fly, lambda s, now: s.snd.melody("rainbow")),
+            (5.0, crowned, lambda s, now: s.snd.melody("fanfare")),
+            (5.0, walk_home, lambda s, now: s.snd.melody("home")),
+            (7.0, jennifer, lambda s, now: s.snd.melody("journal")),
+            (12.0, journal, lambda s, now: s.snd.melody("journal")),
+            (6.0, the_end, lambda s, now: s.snd.melody("party"))]
+
+
+def big_moon(s, cx, cy, r, col=YELLOW):
+    """A great big full moon."""
+    block = "#" if not s.fancy else "█"
+    for y in range(int(cy - r), int(cy + r) + 1):
+        for x in range(int(cx - r * 2), int(cx + r * 2) + 1):
+            if ((x - cx) / 2.0) ** 2 + (y - cy) ** 2 <= r * r:
+                s.put(y, x, block, s.attr(col, False))
+
+
+def opening_witches(stage):
+    """Level 4: the witches have lost their crown! (Psst... it was the rats.)"""
+    def cauldron(s, t, now):
+        s.stars(now, 40)
+        s.art(1, 66, MOON, YELLOW)
+        s.art(10, 4, WITCH_HOUSE, {"[": YELLOW, "]": YELLOW, "default": MAGENTA})
+        s.art(14, 34, CAULDRON, {"o": GREEN, "O": GREEN, "~": GREEN, "default": WHITE})
+        if bob(now, 3):
+            s.burst(40, 13, 2, [GREEN, MAGENTA], now, "o.", 6)
+        for i, x in enumerate((22, 48)):
+            s.art(12 + bob(now + i, 2), x, WITCH[bob(now * 2 + i, 2)], WITCH_COL)
+        crows(s, now, 4, 2, seed=21, speed=6)
+        s.typed(21, "Bubble bubble... the witches are making soup.", t * 2, GREEN)
+
+    def stolen(s, t, now):
+        s.big("OH NO!", 0, colors=lambda i: MAGENTA if bob(now + i, 6) else GREEN)
+        for i, x in enumerate((14, 34, 54)):
+            s.art(7 - bob(now * 3 + i, 6), x, WITCH[0], WITCH_COL)
+        s.typed(15, "Our CROWN is gone! Somebody STOLE it!", t * 3, YELLOW)
+        if t > .45:                                     # down at the bottom... who's that?
+            x = 84 - (t - .45) / .55 * 100
+            for i in range(3):
+                s.put(19, x + i * 7, RAT[bob(now * 3 + i, 4)], s.attr(ORANGE))
+            s.art(18, int(x + 21), CROWN_SMALL, YELLOW)
+            s.text(22, "(psst... who are THOSE little guys?)", WHITE, False)
+
+    def quest(s, t, now):
+        s.big("WITCHES", 0, colors=lambda i: MAGENTA if (i + int(now * 3)) % 2 else GREEN)
+        s.art(8, 37, HERO if bob(now, 2) else HERO_WALK, HERO_COL)
+        s.art(7, 14, WITCH[1], WITCH_COL)
+        s.art(7, 56, WITCH[1], WITCH_COL)
+        s.typed(14, "Find the WITCHES' CROWN!", t * 3, YELLOW)
+        s.typed(17, "Get the lamp. Go down, down, down...", (t - .3) * 3, CYAN)
+        s.typed(19, "Step on the rats before they nibble your gold!", (t - .5) * 3, ORANGE)
+
+    return [(5.0, cauldron, lambda s, now: s.snd.melody("spooky")),
+            (5.0, stolen, lambda s, now: s.snd.melody("boo")),
+            (5.0, quest, lambda s, now: s.snd.melody("quest"))]
+
+
+def ending_moon(stage):
+    """Level 4 won: the rats run off, and the witches say thank you under a great big moon."""
+    def found(s, t, now):
+        s.text(1, "At the bottom of the well...", CYAN, False)
+        s.art(9, 37, CROWN, YELLOW)
+        if bob(now, 4):
+            s.burst(40, 10, 3, [YELLOW, WHITE], now, "*+.")
+        s.art(15, 20, HERO if bob(now, 3) else HERO_WALK, HERO_COL)
+        for i in range(4):                              # the rats run for it!
+            x = 46 + t * 50 + i * 7
+            s.put(17 + i % 2, x, RAT[bob(now * 4 + i, 4)], s.attr(ORANGE))
+        if t > .3:
+            s.text(21, "SQUEAK! It was the RATS all along!", ORANGE)
+
+    def moon(s, t, now):
+        s.stars(now, 50)
+        big_moon(s, 40, 10, 8)
+        for i in range(3):                              # witches on broomsticks fly across the moon
+            x = -16 + ((t * 1.2 + i * .33) % 1.2) * 90
+            s.art(4 + i * 5 + bob(now + i, 2), int(x), WITCH_BROOM[bob(now * 2 + i, 3)], WITCH_COL)
+        s.text(21, "Whoooosh! The witches have their crown back!", MAGENTA)
+
+    def thanks(s, t, now):
+        """Like the sketch: THANK YOU! in a cloud, a moon, pointy hats everywhere, and the crowned witch."""
+        s.stars(now, 40)
+        s.art(9, 2, MOON, YELLOW)
+        s.big("THANK YOU!", 1, colors=lambda i: MAGENTA if (i + int(now * 4)) % 2 else GREEN)
+        wave = "~-~~-~^~-~~^-~~-~^~~-~-~~^~-~~-~^~~-~~-~^~-~~-~~^~-~~-~^~-~~"
+        off = int(now * 3) % 6
+        s.put(7, 10, wave[off:off + 60], s.attr(WHITE, False))           # the cloud the words sit in
+        s.put(0, 10, wave[off:off + 60], s.attr(WHITE, False))
+        if bob(now, 2):
+            s.fireworks(now, .7)
+        for i, x in enumerate((14, 25, 49, 62)):                          # witches all around
+            s.art(11 + (i % 2) * 2 + bob(now * 2 + i, 2), x, WITCH[bob(now * 3 + i, 3)], WITCH_COL)
+        s.art(9 + bob(now, 2), 37, CROWN_SMALL, YELLOW)                    # the witch with her crown back
+        s.art(11 + bob(now, 2), 35, WITCH[1][1:], WITCH_COL)
+        s.typed(21, "Thank you for finding our crown! You are our friend forever!", t * 2, YELLOW)
+
+    def next_up(s, t, now):
+        s.stars(now, 60)
+        s.text(8, "Meanwhile, back in Robot Town...", CYAN)
+        if t > .3:
+            s.art(12, int(-8 + t * 60), LEPRECHAUN[bob(now, 6)], LEP_COL)
+        if t > .6:
+            s.text(19, "NEXT: THE WHISPERING FOREST", GREEN)
+
+    return [(4.5, found, lambda s, now: s.snd.melody("gold")),
+            (5.0, moon, lambda s, now: s.snd.melody("night")),
+            (5.0, thanks, lambda s, now: s.snd.melody("fanfare")),
+            (4.0, next_up, lambda s, now: s.snd.melody("sneak"))]
+
+
 SCENES = {"town": opening_town, "crown": ending_crown, "ship": opening_ship, "ghosts": ending_ghosts,
-          "rainbow": opening_rainbow, "rainbow_end": ending_rainbow}
+          "rainbow": opening_rainbow, "rainbow_end": ending_rainbow,
+          "thief": opening_thief, "home": ending_home, "witches": opening_witches, "moon": ending_moon}
 
 
 # ================================================================ playing a scene

@@ -1,5 +1,4 @@
 title: Fairy Forest
-level: 3
 west: meadow
 east: rcastle
 1: Fairy: Zap the yellow walls! There is a secret room!

@@ -1,5 +1,4 @@
 title: Rainbow Castle
-level: 3
 west: fairy
 north: rainbowend
 1: Fairy Queen: Welcome to my rainbow castle! The pot of gold is past the green door.

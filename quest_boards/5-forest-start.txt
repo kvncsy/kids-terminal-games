@@ -1,0 +1,33 @@
+title: Whispering Forest
+adventure: Whispering Forest
+goal: the Way Home
+opening: thief
+ending: home
+intro: The Leprechaun King took the Golden Crown! Find gold, trade it for the crown, and bring it to Queen Maeve.
+north: maze
+east: cave
+west: glade
+1: Owl Bot: Shh! Crows! Walk up close and WHOOSH, away they fly!
+2: Lamp Bot: The cave is DARK. Zap the yellow tree. The lamp is inside!
+map:
+############################    ############################
+# T TT        T                   T     T    ~~         TT #
+#                        T             T     ~~        T   #
+# T   TT  TT    VV V V T             T     TT~~    V V     #
+#         $ T     V V               T T T    ~~   V V V    #
+#T   T  T       T       T                 T  ~~ T   V      #
+#    *        T   TTT               T   $  TT~~   T      T #
+#                     T               TT     ~~    T       #
+#                                            ~~            #
+                                             ==             
+    a                                        ==             
+                                             ==             
+#                                            ~~          * #
+#   TTT TT                              T  T ~~          TT#
+#                T                           ~~            #
+#T     %%%%%    T   T     1  @  a      V V V ~~ T   E      #
+#T     % l % T2  T T                    V V  ~~          T #
+#  T   %%%%%        T                        ~~        $   #
+#             T   T              +     TT   T~~            #
+#TT                   T $         T  T  T    ~~          T #
+############################################################

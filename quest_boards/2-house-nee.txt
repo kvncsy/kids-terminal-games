@@ -1,5 +1,4 @@
 title: Haunted House
-level: 2
 dark: yes
 west: woods
 1: Nice Ghost: BOO! Ha ha. I am a NICE ghost. My treasure is in the last room!

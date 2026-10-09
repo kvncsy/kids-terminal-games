@@ -1,5 +1,4 @@
 title: Rainbow Meadow
-level: 3
 adventure: Rainbow Kingdom
 goal: the Pot of Gold
 opening: rainbow

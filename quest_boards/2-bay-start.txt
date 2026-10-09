@@ -1,7 +1,6 @@
 title: Bridge Bay
 opening: ship
 ending: ghosts
-level: 2
 adventure: Spooky Islands
 goal: the Ghost's Treasure
 intro: Push rocks into the water to make bridges. Zap the yellow walls. Find the ghost's treasure!

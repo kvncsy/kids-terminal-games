@@ -1,5 +1,4 @@
 title: Crystal Cave
-level: 3
 south: meadow
 1: Miner Bot: Push the rock UP into the river. It makes a bridge!
 map:

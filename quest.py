@@ -13,8 +13,8 @@ to where you came into the board. Progress is saved when you quit.
 
 Like ZZT, the world is made of boards. Each board is a plain text file in
 quest_boards/ that you can change, or copy to make your own
-(see quest_boards/README.txt). A board says which level it belongs to
-("level: 2"); the board with the @ is where that level starts.
+(see quest_boards/README.txt). The file name says the level, the board's name
+and where it is (2-house-nee.txt); the board with the @ is where a level starts.
 
   arrows  walk      SPACE  zap      Esc  save and quit
 
@@ -33,8 +33,10 @@ import curses
 import glob
 import json
 import locale
+import math
 import os
 import random
+import re
 import sys
 import textwrap
 import time
@@ -66,15 +68,22 @@ LION_CHASE = 0.35          # how often a lion that sees you walks toward you
 GHOST_STEP = 0.6           # seconds between ghost moves
 LEPRECHAUN_STEP = 0.32     # leprechauns are quick... but not too quick
 FAIRY_STEP = 0.5
-RAINBOW_SHOES = 20.0       # seconds the rainbow shoes from a surprise box last
+RAINBOW_SHOES = 20.0
+CROW_STEP = 0.12           # how often crows look around (and fly)
+CROW_FRIGHT = 4            # crows fly away when you come this close
+KING_PRICE = 15            # gold the Leprechaun King wants for the crown
+WITCH_FRIGHT = 3           # witches vanish (and leave ammo) when you come this close
+RAT_STEP = 0.18            # rats are fast!
+RAT_NIBBLE = 1.2           # seconds between nibbles       # seconds the rainbow shoes from a surprise box last
 DARK_SIGHT, LAMP_SIGHT = 4.0, 6.5   # how far you can see on a dark board, without and with the lamp
 DEFAULT_INTRO = ("Walk with the ARROW keys. Walk into robots to talk to them. "
                  "Find the three keys and bring home the Golden Crown!")
 ZAP_STEP = 0.035           # seconds for a zap to move one square
-LEGEND = set(" #%~=:TO*$a+l?rbygpcRBYGPCLHEF!@123456789")
+LEGEND = set(" #%&~=:TO*$a+l?rbygpcRBYGPCLHEFVKQA,<>!@123456789")
 KEYS = {"r": "red", "b": "blue", "y": "yellow", "g": "green", "p": "purple", "c": "light blue"}
 DOORS = {k.upper(): k for k in KEYS}
 DIRS = {"north": (0, -1), "south": (0, 1), "west": (-1, 0), "east": (1, 0)}
+STAIRS = {">": "down", "<": "up"}       # step on them to go down (or up) to another board
 
 RED, YELLOW, GREEN, CYAN, BLUE, MAGENTA, WHITE, ORANGE = range(1, 9)
 KEY_COLORS = {"r": RED, "b": BLUE, "y": YELLOW, "g": GREEN, "p": MAGENTA, "c": CYAN}
@@ -83,12 +92,13 @@ RAINBOW = [RED, ORANGE, YELLOW, GREEN, CYAN, BLUE, MAGENTA]
 # how each thing looks: classic ZZT symbols, and plain ones for a small console font
 FANCY = {"#": "█", "%": "▒", "~": "≈", "=": "═", ":": "░", "T": "♣", "O": "■", "*": "♦", "$": "$", "a": "ä",
          "+": "♥", "L": "Ω", "H": "Ö", "E": "¥", "F": "ƒ", "?": "?", "l": "☼", "!": "♛",
-         "key": "♀", "door": "◘", "friend": "☻", "player": "☺", "heart": "♥"}
+         "&": "▓", "V": "v", "K": "K", "Q": "Q", "A": "A", ",": ",", ">": "▼", "<": "▲", "key": "♀", "door": "◘", "friend": "☻", "player": "☺", "heart": "♥"}
 PLAIN = {"#": "█", "%": "%", "~": "~", "=": "=", ":": ":", "T": "T", "O": "O", "*": "*", "$": "$", "a": "a",
          "+": "+", "L": "L", "H": "G", "E": "E", "F": "F", "?": "?", "l": "i", "!": "W",
-         "key": "k", "door": "▒", "friend": "&", "player": "@", "heart": "+"}
+         "&": "#", "V": "v", "K": "K", "Q": "Q", "A": "A", ",": ",", ">": ">", "<": "<", "key": "k", "door": "▒", "friend": "&", "player": "@", "heart": "+"}
 COLORS = {"#": WHITE, "%": YELLOW, "~": BLUE, "=": ORANGE, "T": GREEN, "O": MAGENTA, "*": CYAN, "$": YELLOW,
-          "a": CYAN, "+": RED, "L": RED, "H": WHITE, "E": GREEN, "F": MAGENTA, "?": MAGENTA, "l": YELLOW, "!": YELLOW}
+          "a": CYAN, "+": RED, "L": RED, "H": WHITE, "E": GREEN, "F": MAGENTA, "?": MAGENTA, "l": YELLOW, "!": YELLOW,
+          "&": GREEN, "V": WHITE, "K": GREEN, "Q": MAGENTA, "A": MAGENTA, ",": ORANGE, ">": CYAN, "<": CYAN}
 WALKABLE = " =:"           # ground you can stand on (bridges and rainbows stay put when you walk over them)
 
 
@@ -106,6 +116,7 @@ class Board:
         self.grid = [list(r) for r in rows]
         self.start = None
         self.boulder_homes = set()
+        self.crow_homes = set()
         for y, row in enumerate(self.grid):
             for x, c in enumerate(row):
                 if c == "@":
@@ -113,6 +124,8 @@ class Board:
                     row[x] = " "
                 elif c == "O":
                     self.boulder_homes.add((x, y))
+                elif c == "V":
+                    self.crow_homes.add((x, y))
 
     def at(self, x, y):
         return self.grid[y][x]
@@ -121,12 +134,19 @@ class Board:
         self.grid[y][x] = c
 
 
+FILE_NAME = re.compile(r"^(\d+)-([a-z0-9_]+)(?:-([nsewud]+|start))?$")
+
+
 def parse_board(path):
-    """Read a board file. Returns (Board, list of problems)."""
-    name = os.path.splitext(os.path.basename(path))[0]
+    """Read a board file. Returns (Board, list of problems).
+    A file called 2-house-nee.txt is the board "house" in level 2, north and two east of the start.
+    (Plain names like house.txt work too; then the level comes from a 'level:' line.)"""
+    stem = os.path.splitext(os.path.basename(path))[0]
+    named = FILE_NAME.match(stem.lower())
+    name = named.group(2) if named else stem
     title, exits, messages, rows, problems = name.title(), {}, {}, [], []
     dark = False
-    info = {}
+    info = {"level": int(named.group(1)), "where": named.group(3) or ""} if named else {}
     in_map = False
     with open(path, encoding="utf-8") as f:
         for n, raw in enumerate(f, 1):
@@ -146,13 +166,20 @@ def parse_board(path):
             elif key == "dark":
                 dark = value.lower() in ("yes", "true", "1", "on")
             elif key == "level":
-                if value.isdigit() and int(value) >= 1:
+                if named and value != named.group(1):
+                    problems.append("line %d: the file name says level %s" % (n, named.group(1)))
+                elif value.isdigit() and int(value) >= 1:
                     info["level"] = int(value)
                 else:
                     problems.append("line %d: the level should be a number, like 'level: 2'" % n)
             elif key in ("adventure", "goal", "intro", "opening", "ending"):
                 info[key] = value
-            elif key in DIRS:
+            elif key == "box":
+                if value in KEYS:
+                    info["box"] = value
+                else:
+                    problems.append("line %d: the box should hold a key, like 'box: y'" % n)
+            elif key in DIRS or key in STAIRS.values():
                 exits[key] = value
             elif len(key) == 1 and key in "123456789":
                 messages[key] = value
@@ -166,6 +193,8 @@ def parse_board(path):
         for x, c in enumerate(r[:BOARD_W]):
             if c not in LEGEND:
                 problems.append("map row %d, column %d: unknown symbol %r" % (y + 1, x + 1, c))
+            elif c in STAIRS and STAIRS[c] not in exits:
+                problems.append("map row %d: a way %s, but no '%s:' line says where it goes" % (y + 1, STAIRS[c], STAIRS[c]))
             elif c in "123456789" and c not in messages:
                 problems.append("map row %d: robot %s has nothing to say (add a line '%s: ...')" % (y + 1, c, c))
     rows = [r[:BOARD_W].ljust(BOARD_W) for r in (rows + [""] * BOARD_H)[:BOARD_H]]
@@ -174,7 +203,7 @@ def parse_board(path):
 
 
 def load_world(level=None):
-    """The boards of one level (or of every level, for checking)."""
+    """The boards of one level, by name. With no level: every board, by (level, name), for checking."""
     boards, problems = {}, []
     for path in sorted(glob.glob(os.path.join(BOARD_DIR, "*.txt"))):
         if os.path.basename(path).lower() == "readme.txt":
@@ -182,19 +211,49 @@ def load_world(level=None):
         board, probs = parse_board(path)
         if level is not None and board.level != level:
             continue
-        boards[board.name] = board
-        problems += ["%s: %s" % (os.path.basename(path), p) for p in probs]
-    for b in boards.values():
-        for d, target in b.exits.items():
-            if target not in boards:
-                problems.append("%s.txt: the %s exit goes to %r, but there is no %s.txt" % (b.name, d, target, target))
-            elif boards[target].level != b.level:
-                problems.append("%s.txt: the %s exit goes to %s.txt, which is in another level" % (b.name, d, target))
+        key = board.name if level is not None else (board.level, board.name)
+        if key in boards:
+            problems.append("%s: level %d already has a board called %s" % (os.path.basename(path), board.level, board.name))
+        board.file = os.path.basename(path)
+        boards[key] = board
+        problems += ["%s: %s" % (board.file, p) for p in probs]
     for lv in sorted({b.level for b in boards.values()}):
-        starts = [b.name for b in boards.values() if b.level == lv and b.start]
+        here = {b.name: b for b in boards.values() if b.level == lv}
+        starts = [b for b in here.values() if b.start]
         if len(starts) != 1:
             problems.append("level %d needs exactly one @ (where the player starts); it has %d" % (lv, len(starts)))
+        for b in here.values():
+            for d, target in b.exits.items():
+                if target not in here:
+                    problems.append("%s: the %s exit goes to %r, but level %d has no board called that"
+                                    % (b.file, d, target, lv))
+        if len(starts) == 1:
+            problems += where_problems(here, starts[0])
     return boards, problems
+
+
+def where_problems(here, start):
+    """Check the n/s/e/w in file names (like 1-throne-nnn.txt) against where the exits really lead."""
+    spot, todo = {start.name: (0, 0, 0)}, [start.name]
+    while todo:
+        b = here[todo.pop(0)]
+        for d, target in b.exits.items():
+            if target in here and target not in spot:
+                dx, dy, dz = DIRS[d] + (0,) if d in DIRS else (0, 0, 1 if d == "down" else -1)
+                spot[target] = (spot[b.name][0] + dx, spot[b.name][1] + dy, spot[b.name][2] + dz)
+                todo.append(target)
+    out = []
+    for b in here.values():
+        where = b.info.get("where", "")
+        if not where or b.name not in spot:
+            continue
+        x, y, z = spot[b.name]
+        real = "d" * z + "u" * -z + "n" * -y + "s" * y + "e" * x + "w" * -x or "start"
+        said = (where.count("e") - where.count("w"), where.count("s") - where.count("n"),
+                where.count("d") - where.count("u")) if where != "start" else (0, 0, 0)
+        if said != (x, y, z):
+            out.append("%s: the name says %s, but this board is %s from the start" % (b.file, where, real))
+    return out
 
 
 def level_list():
@@ -245,6 +304,9 @@ class Sounds:
     def fairy(self): self.notes((12, 16, 19, 24, 28, 31), 0.05)
     def surprise(self): self.notes((0, 7, 12, 16, 19, 24), 0.06); self.play(lambda: bb.drum(0))
     def leprechaun(self): self.notes((7, 9, 12, 9, 7, 12, 16, 19), 0.07)
+    def cackle(self): self.notes((19, 16, 19, 16, 19, 16, 12), 0.06)
+    def squeak(self): self.play(lambda: bb.Voice([bb.tone(bb.SINE, 1700, .35)], .08, .002, .05, sweep_from=.7, sweep_time=.06))
+    def caw(self): self.play(lambda: bb.Voice([bb.tone(bb.SAW, 700, .4)], .18, .005, .12, sweep_from=1.4, sweep_time=.12)); self.play(lambda: bb.Voice([bb.hiss(bb.NOISE, .25, .4)], .4, .05, .5))
     def boom(self): self.play(lambda: bb.drum(random.choice((0, 4, 9))))
 
     MELODIES = {               # (notes above middle C, seconds between notes)
@@ -253,6 +315,9 @@ class Sounds:
         "fanfare": ((0, 4, 7, 12, 7, 12, 16, 19, 24, 19, 24, 28), .14), "spooky": ((0, 3, 7, 6, 3, 0, -1, 0), .4),
         "boo": ((12, 11, 10, 9, 8, 7), .12), "gold": ((24, 28, 31, 36, 31, 36, 40, 43), .1),
         "party": ((0, 4, 7, 4, 9, 7, 4, 0, 12, 16, 19, 24), .15), "rainbow": ((0, 2, 4, 5, 7, 9, 11, 12, 16, 19, 24), .2),
+        "night": ((12, 7, 4, 0, 4, 7, 4, 0), .35), "sneak": ((0, 2, 0, 2, 3, 5, 3, 7), .16),
+        "forest": ((0, 4, 7, 9, 7, 4, 2, 0), .26), "home": ((7, 5, 4, 2, 4, 0, 4, 7, 12), .3),
+        "journal": ((12, 11, 9, 7, 9, 11, 12, 16), .32),
     }
 
     def melody(self, name):
@@ -324,7 +389,7 @@ class Game:
         level (the haunted house), that level opens, the ones before it count as won, and it
         starts fresh at its first room: the old walls and doors don't match it."""
         boards, _ = load_world()
-        lv = boards[data["board"]].level if data.get("board") in boards else min(self.levels)
+        lv = min([lv for lv, name in boards if name == data.get("board")] or [min(self.levels)])
         slots = {str(lv): data} if lv == min(self.levels) else {}
         return {"unlocked": lv, "done": [v for v in self.levels if v < lv], "slots": slots}
 
@@ -423,6 +488,9 @@ class Game:
         self.keys = set()
         self.lamp = False
         self.gold = 0
+        self.crown = False        # Level 4: the crown from the Leprechaun King, for Queen Maeve
+        self.birds = []           # crows flying away
+        self.nibbled_at = 0.0     # when a rat last nibbled you
         self.parts = []           # sparkles on the board
         self.shoes_until = 0.0    # rainbow shoes from a surprise box
         self.zaps = []
@@ -430,7 +498,7 @@ class Game:
         self.dialog = None
         self.msg, self.msg_until, self.msg_color = "", 0.0, WHITE
         self.hurt_until = 0.0
-        self.next_lion = self.next_zap = self.next_ghost = self.next_lep = self.next_fairy = 0.0
+        self.next_lion = self.next_zap = self.next_ghost = self.next_lep = self.next_fairy = self.next_crow = self.next_rat = 0.0
         self.hint_until = 0.0
 
     def save(self):
@@ -438,7 +506,7 @@ class Game:
             return
         data = {"board": self.board.name, "x": self.px, "y": self.py, "entry": list(self.entry),
                 "health": self.health, "ammo": self.ammo, "gems": self.gems, "score": self.score,
-                "keys": sorted(self.keys), "lamp": self.lamp, "gold": self.gold, "grids": {n: ["".join(r) for r in b.grid] for n, b in self.boards.items()}}
+                "keys": sorted(self.keys), "lamp": self.lamp, "gold": self.gold, "crown": self.crown, "grids": {n: ["".join(r) for r in b.grid] for n, b in self.boards.items()}}
         self.progress["slots"][str(self.level)] = data
         self.write_progress()
 
@@ -466,6 +534,7 @@ class Game:
             self.keys = set(data["keys"])
             self.lamp = data.get("lamp", False)
             self.gold = data.get("gold", 0)
+            self.crown = data.get("crown", False)
             return True
         except (OSError, ValueError, KeyError, TypeError):
             return False
@@ -535,11 +604,30 @@ class Game:
             self.burst(nx, ny, 6, [YELLOW, ORANGE])
             if self.gold % 10 == 0:
                 self.say("%d GOLD COINS!" % self.gold, YELLOW, 2)
+        elif t in STAIRS:
+            self.take_stairs(STAIRS[t])
+            return
+        elif t == ",":
+            self.squash_rat(nx, ny)
+        elif t == "?" and b.info.get("box") and not b.info.get("box_open"):
+            b.info["box_open"] = True                   # this box was hiding a key!
+            k = b.info["box"]
+            b.set(nx, ny, k)
+            self.snd.surprise()
+            self.burst(nx, ny, 40, [KEY_COLORS[k], WHITE])
+            self.say("SURPRISE! A %s KEY was inside the box!" % KEYS[k].upper(), KEY_COLORS[k], 4)
+            return
         elif t == "?":
             b.set(nx, ny, " ")
             self.surprise(nx, ny)
         elif t == "E":
             self.catch_leprechaun(nx, ny)
+            return
+        elif t == "K":
+            self.meet_king(nx, ny)
+            return
+        elif t == "Q":
+            self.meet_queen(nx, ny)
             return
         elif t == "F":
             self.health = MAX_HEALTH
@@ -640,6 +728,37 @@ class Game:
             b.set(self.px, self.py, ":")                # rainbow shoes leave a rainbow behind you
         self.px, self.py = nx, ny
 
+    def meet_king(self, x, y):
+        """The Leprechaun King swaps the Golden Crown for gold."""
+        self.snd.talk()
+        if self.crown:
+            self.say_box("Leprechaun King", "Off you go! Queen Maeve is in the Fairy Glade, west of the forest.")
+        elif self.gold >= KING_PRICE:
+            self.gold -= KING_PRICE
+            self.crown = True
+            self.score += 200
+            self.snd.leprechaun()
+            self.burst(x, y, 50, [YELLOW, GREEN, WHITE], "$*+")
+            self.say_box("Leprechaun King", "%d gold coins! A fair trade. Here is the GOLDEN CROWN! "
+                         "Take it to Queen Maeve in the Fairy Glade." % KING_PRICE)
+        else:
+            self.say_box("Leprechaun King", "Hee hee! I have the Golden Crown. I want %d GOLD for it. "
+                         "You have %d. Catch leprechauns! Find gold!" % (KING_PRICE, self.gold))
+
+    def meet_queen(self, x, y):
+        """Queen Maeve sends the crown home, and that wins Level 4."""
+        self.snd.talk()
+        if not self.crown:
+            self.say_box("Queen Maeve", "Hello, brave one! The Leprechaun King has the Golden Crown. "
+                         "Bring it to me, and my magic will send it home.")
+            return
+        self.crown = False
+        self.score += 500
+        self.burst(x, y, 60, [MAGENTA, YELLOW, WHITE, CYAN], "*+.")
+        self.snd.fairy()
+        self.finish_level()
+        self.snd.win()
+
     def open_door(self, x, y, t):
         """A door can be several squares wide; open all of it."""
         todo = [(x, y)]
@@ -648,6 +767,28 @@ class Game:
             if 0 <= cx < BOARD_W and 0 <= cy < BOARD_H and self.board.at(cx, cy) == t:
                 self.board.set(cx, cy, " ")
                 todo += [(cx + 1, cy), (cx - 1, cy), (cx, cy + 1), (cx, cy - 1)]
+
+    def take_stairs(self, way):
+        """Down the stairs (or the well), or back up: you come out at the other board's way back."""
+        name = self.board.exits.get(way)
+        if name not in self.boards:
+            return
+        nb = self.boards[name]
+        back = "<" if way == "down" else ">"
+        spots = [(x, y) for y in range(BOARD_H) for x in range(BOARD_W) if nb.at(x, y) == back]
+        if spots:
+            sx, sy = spots[0]
+        else:
+            sx, sy = nb.start or (BOARD_W // 2, BOARD_H // 2)
+        free = [(sx + dx, sy + dy) for dx, dy in ((0, 1), (1, 0), (-1, 0), (0, -1))
+                if 0 <= sx + dx < BOARD_W and 0 <= sy + dy < BOARD_H and nb.at(sx + dx, sy + dy) in WALKABLE]
+        self.board = nb
+        self.px, self.py = free[0] if free else (sx, sy)
+        self.entry = (self.px, self.py)
+        self.zaps = []
+        self.boulders_home()
+        self.snd.whoosh()
+        self.say("~ %s ~%s" % (nb.title, "  (it's dark down here!)" if nb.dark and not self.lamp else ""), YELLOW, 2.5)
 
     def leave(self, dx, dy):
         direction = {(0, -1): "north", (0, 1): "south", (-1, 0): "west", (1, 0): "east"}[(dx, dy)]
@@ -682,6 +823,10 @@ class Game:
         for x, y in b.boulder_homes:
             if b.at(x, y) == " " and (x, y) != (self.px, self.py):
                 b.set(x, y, "O")
+        self.birds = []
+        for x, y in b.crow_homes:                   # and the crows come back to their trees
+            if b.at(x, y) == " " and (x, y) != (self.px, self.py):
+                b.set(x, y, "V")
 
     # ------------------------------------------------------------ zaps, lions, hearts
     def shoot(self):
@@ -763,10 +908,70 @@ class Game:
         self.spill_gold(x, y, 8)
         self.say("You caught a leprechaun! He gives you his GOLD!", GREEN, 3)
 
+    def scatter(self, x, y):
+        """WHOOSH! A crow takes fright, and the whole flock near it flies away."""
+        b = self.board
+        flock, todo = set(), [(x, y)]
+        while todo:
+            cx, cy = todo.pop()
+            if (cx, cy) in flock:
+                continue
+            flock.add((cx, cy))
+            todo += [(fx, fy) for fy in range(max(0, cy - 3), min(BOARD_H, cy + 4))
+                     for fx in range(max(0, cx - 6), min(BOARD_W, cx + 7)) if b.at(fx, fy) == "V"]
+        for fx, fy in flock:
+            b.set(fx, fy, " ")
+            away_x = fx - self.px or random.choice((-1, 1))
+            dist = max(1.0, math.hypot(away_x, fy - self.py))
+            self.birds.append([float(fx), float(fy), away_x / dist * random.uniform(14, 22) + random.uniform(-4, 4),
+                               -random.uniform(5, 9), random.random()])
+        self.snd.caw()
+        self.say("CAW! CAW! WHOOSH!" if len(flock) > 1 else "CAW!", WHITE, 1.5)
+
+    def vanish(self, x, y):
+        """A witch cackles and vanishes in a puff of smoke... leaving ammo behind."""
+        self.board.set(x, y, "a")
+        self.score += 20
+        self.snd.cackle()
+        self.burst(x, y, 25, [MAGENTA, GREEN, WHITE], "*+.o")
+        self.say("Hee hee hee! POOF! The witch left you some zaps!", MAGENTA, 2.5)
+
+    def squash_rat(self, x, y):
+        self.board.set(x, y, " ")
+        self.score += 10
+        self.snd.squeak()
+        self.burst(x, y, 8, [ORANGE, WHITE], ".,")
+        self.say("SQUEAK! Squished a rat!", ORANGE, 1.5)
+
+    def nibble(self):
+        """A rat nibbles you and runs off with a gold coin, or a gem."""
+        now = time.time()
+        if now - self.nibbled_at < RAT_NIBBLE:
+            return
+        self.nibbled_at = now
+        self.snd.squeak()
+        if self.gold:
+            self.gold -= 1
+            self.say("Nibble nibble! A rat took a GOLD coin! Step on it!", ORANGE, 2.5)
+        elif self.gems:
+            self.gems -= 1
+            self.say("Nibble nibble! A rat took a GEM! Step on it!", ORANGE, 2.5)
+        else:
+            self.say("Nibble nibble! (Nothing to steal. Silly rat!)", ORANGE, 2)
+
     def zap_hit(self, x, y):
         """A zap hits whatever is here. Returns True if it should stop flying."""
         b = self.board
         t = b.at(x, y)
+        if t == "A":
+            self.vanish(x, y)
+            return True
+        if t == ",":
+            self.squash_rat(x, y)
+            return True
+        if t == "V":
+            self.scatter(x, y)
+            return True
         if t == "E":
             self.catch_leprechaun(x, y)
             return True
@@ -808,6 +1013,37 @@ class Game:
                     continue
                 b.set(x, y, " ")
                 b.set(tx, ty, "E")
+        if now >= self.next_crow:
+            self.next_crow = now + CROW_STEP
+            for x, y in [(x, y) for y in range(BOARD_H) for x in range(BOARD_W) if b.at(x, y) == "V"]:
+                if b.at(x, y) == "V" and abs(x - self.px) * 0.5 + abs(y - self.py) <= CROW_FRIGHT:
+                    self.scatter(x, y)
+        for x, y in [(x, y) for y in range(BOARD_H) for x in range(BOARD_W) if b.at(x, y) == "A"]:
+            if abs(x - self.px) * 0.5 + abs(y - self.py) <= WITCH_FRIGHT:
+                self.vanish(x, y)
+        if now >= self.next_rat:
+            self.next_rat = now + RAT_STEP
+            for x, y in [(x, y) for y in range(BOARD_H) for x in range(BOARD_W) if b.at(x, y) == ","]:
+                if b.at(x, y) != ",":
+                    continue
+                ddx, ddy = self.px - x, self.py - y
+                if abs(ddx) + abs(ddy) <= 7 and random.random() < 0.5:          # sniff sniff... gold!
+                    step = ((ddx > 0) - (ddx < 0), 0) if abs(ddx) > abs(ddy) else (0, (ddy > 0) - (ddy < 0))
+                elif random.random() < 0.6:
+                    step = random.choice(list(DIRS.values()))
+                else:
+                    continue
+                tx, ty = x + step[0], y + step[1]
+                if (tx, ty) == (self.px, self.py):
+                    self.nibble()
+                    away = [(x - step[0], y - step[1])]               # and scurry off
+                    for ax, ay in away:
+                        if 0 <= ax < BOARD_W and 0 <= ay < BOARD_H and b.at(ax, ay) == " ":
+                            b.set(x, y, " ")
+                            b.set(ax, ay, ",")
+                elif 0 <= tx < BOARD_W and 0 <= ty < BOARD_H and b.at(tx, ty) == " ":
+                    b.set(x, y, " ")
+                    b.set(tx, ty, ",")
         if now >= self.next_fairy:
             self.next_fairy = now + FAIRY_STEP
             for x, y in [(x, y) for y in range(BOARD_H) for x in range(BOARD_W) if b.at(x, y) == "F"]:
@@ -827,7 +1063,7 @@ class Game:
                     continue
                 # a near miss counts: lions and ghosts right beside the zap's path get hit too
                 for sx, sy in ((x + z[3], y + z[2]), (x - z[3], y - z[2])):
-                    if 0 <= sx < BOARD_W and 0 <= sy < BOARD_H and b.at(sx, sy) in "LHE":
+                    if 0 <= sx < BOARD_W and 0 <= sy < BOARD_H and b.at(sx, sy) in "LHE,A":
                         self.zap_hit(sx, sy)
                 if self.zap_hit(x, y):
                     self.zaps.remove(z)
@@ -890,6 +1126,14 @@ class Game:
             return L["?"], color(RAINBOW[int(now * 4) % len(RAINBOW)]) | curses.A_REVERSE
         if t == "F":
             return L["F"], color(MAGENTA if int(now * 4) % 2 else YELLOW)
+        if t == "K":
+            return "K", color(GREEN if int(now * 2) % 3 else YELLOW)
+        if t == "Q":
+            return "Q", color(MAGENTA if int(now * 3) % 3 else WHITE)
+        if t == "&":
+            return L["&"], color(GREEN, False)
+        if t == "A":
+            return "A", color(MAGENTA if int(now * 3) % 4 else GREEN)
         return L.get(t, t), color(COLORS.get(t, WHITE), t not in "#")
 
     def draw(self, now):
@@ -934,6 +1178,13 @@ class Game:
             if 0 <= p[0] < BOARD_W and 0 <= p[1] < BOARD_H:
                 put(scr, oy + int(p[1]), ox + int(p[0]), p[5], color(p[6]))
         self.parts = [p for p in self.parts if p[4] > now][-300:]
+        for bird in self.birds:                          # crows flying away, flapping
+            bird[0] += bird[2] * dt
+            bird[1] += bird[3] * dt
+            bird[4] += dt * 6
+            if 0 <= bird[0] < BOARD_W and 0 <= bird[1] < BOARD_H:
+                put(scr, oy + int(bird[1]), ox + int(bird[0]), "v" if int(bird[4]) % 2 else "^", color(WHITE))
+        self.birds = [bd for bd in self.birds if 0 <= bd[0] < BOARD_W and 0 <= bd[1] < BOARD_H]
         hurt = now < self.hurt_until and int(now * 10) % 2
         put(scr, oy + self.py, ox + self.px, self.look["player"], on_blue(RED if hurt else WHITE))
         self.draw_sidebar(ox + BOARD_W, oy, now)
@@ -976,6 +1227,9 @@ class Game:
         if self.lamp:
             put(self.scr, y + 10, x, "  Lamp", on_blue(WHITE))
             put(self.scr, y + 10, x + 9, self.look["l"], on_blue(YELLOW))
+        if self.crown:
+            put(self.scr, y + 11, x, "  Crown", on_blue(WHITE))
+            put(self.scr, y + 11, x + 9, self.look["!"], on_blue(RAINBOW[int(now * 6) % len(RAINBOW)]))
         for i, line in enumerate(textwrap.wrap(self.board.title, 17)[:2]):
             put(self.scr, y + 12 + i, x + 2, line, on_blue(CYAN))
         put(self.scr, y + 15, x, "  LEVEL %d" % self.level, on_blue(YELLOW))
@@ -1010,7 +1264,7 @@ class Game:
             elif str(lv) in self.progress["slots"]:
                 put(self.scr, y + 8, x + 2, "playing...".center(cw - 4), color(GREEN))
             name = "?" if locked else self.levels[lv][0]
-            put(self.scr, y + 11, x + (cw - len(name[:cw])) // 2, name[:cw], color(WHITE if locked else col))
+            put(self.scr, y + 11, x + (cw - len(name[:cw + gap])) // 2, name[:cw + gap], color(WHITE if locked else col))
             if picked:
                 put(self.scr, y + 13, x + cw // 2 - 1, self.look["player"], on_blue(WHITE))
         tip = "ARROWS pick a level, ENTER plays it"

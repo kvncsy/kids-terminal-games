@@ -1,5 +1,4 @@
 title: The End of the Rainbow
-level: 3
 south: rcastle
 1: Leprechaun King: You found the end of my rainbow! The pot of gold is yours!
 map:
