@@ -1,0 +1,31 @@
+title: Dragon Mountain
+adventure: Dragon Mountain
+goal: the Dragon's Ruby
+opening: dragon
+ending: wish
+intro: The dragon's huge ruby is lost! Find it and bring it back to his den.
+west: houses
+3: 3#
+6: l
+map:
+##################################################~~~~~~~~~~
+# ########                                 TTTTTTTTTT~~ ~~~~
+#   ##                  L                      TTTTT ~~~~~~~
+####        L                      a    a       TT~~~~~~~~~~
+                             $                a  TTTT~~~~~~~
+#                       $              $ $   ,    TT~~~~~ ~~
+#                         ,    ,   ,             T~~~~~~~~ #
+#         L                                ~~   T~~ ~~~~~~ #
+#             H    $                $     ~~~~  ~~  ~~ ~~  #
+#      $                                 ~~~ ~~~~  ~~      #
+#           a       H    , r     ~      ~~~~~  ~~~~~       #
+#                               ~~~~  ,~~~~O~~~~ ~~        #
+#                             ~~ O O~~~~~~O  ~~            #
+#                       ~~~  ~~       ~~~                  #
+#                  ~~  ~~~~~~~~        ~                   #
+#             ~~~~~~~~~~  ~~~~                             #
+#      ~~    ~~~~~~~~~~    ~~                              #
+#     ~~~~~~~~~~    ~~           $  $  $    a   a    a     #
+~ ~~~~~~~~~~                                               #
+~~~~~~                                                   @ #
+~~##########################################################

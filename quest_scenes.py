@@ -176,6 +176,24 @@ WITCH_HOUSE = ["      /\\      ", "     /  \\     ", "    / /\\ \\    ", "   /__
 RAT = ["<:3)~", "<:3)-"]
 WINDOW = ["+-------+", "|   |   |", "|---+---|", "|   |   |", "+-------+"]
 
+
+def dragon(eyes="O", mouth="\\vvvv/"):
+    """A big dragon face with horns and wings. eyes: - asleep, O awake, ^ happy. mouth: \\vvvv/ shut, |VVVV| roaring."""
+    return [" /\\                    /\\ ",
+            "/  \\     /\\    /\\     /  \\",
+            "|   \\   /  \\__/  \\   /   |",
+            "|    \\_|  %s    %s  |_/    |" % (eyes, eyes),
+            " \\     |    oo    |     / ",
+            "  \\____|  ______  |____/  ",
+            "        \\ %s /        " % mouth,
+            "         \\______/         "]
+GOLD_PILE = ["        $ * $        ", "    $$$$$$$$$$$$$    ", "  $$$*$$$$$$$$$*$$$  ", " $$$$$$$$$$$*$$$$$$$ ",
+             "$$$*$$$$$$$$$$$$$$$$$"]
+RUBY = [" ____ ", "/\\__/\\", "\\ \\/ /", " \\  / ", "  \\/  "]
+JEN_LIFT = ["  ,~~~~~,  ", " ( (^_^) ) ", " )\\|_|/ ( ", "   / | \\   "]
+JEN_WISH = ["  ,~~~~~,  ", " ( (-_-) ) ", " ) /|_|\\ ( ", "   / | \\   "]
+CAVE_TOP = "VvVVvVvVVvvVvVVvVvvVVvVvVVvVvvVVvVvVVvVVvvVvVVvVvvVVvVVvVvVvVVvVvvVVvVvVVvVvVVvV"
+
 HERO_COL = {"^": WHITE, "_": WHITE, "(": WHITE, ")": WHITE, "default": YELLOW}
 ROBOT_COL = {"o": WHITE, "^": WHITE, "[": WHITE, "]": WHITE, "_": WHITE, "default": ORANGE}
 GHOST_COL = {"o": CYAN, "O": CYAN, "^": CYAN, "v": CYAN, "default": WHITE}
@@ -186,6 +204,8 @@ JEN_COL = {"~": ORANGE, ",": ORANGE, "(": ORANGE, ")": ORANGE, "^": WHITE, "_": 
 BOOK_COL = {"~": BLUE, "default": WHITE}
 WITCH_COL = {"/": MAGENTA, "\\": MAGENTA, "_": MAGENTA, "o": GREEN, ".": GREEN, "^": GREEN, "(": GREEN, ")": GREEN,
              "#": MAGENTA, "-": ORANGE, "}": YELLOW, "{": YELLOW, "default": MAGENTA}
+DRAGON_COL = {"O": YELLOW, "-": YELLOW, "^": YELLOW, "o": ORANGE, "v": WHITE, "V": WHITE, "default": GREEN}
+GOLD_COL = {"*": RED, "default": YELLOW}
 LEP_COL = {"=": GREEN, "_": GREEN, "^": WHITE, "o": WHITE, "(": WHITE, ")": WHITE, "[": YELLOW, "]": YELLOW,
            "default": GREEN}
 
@@ -690,9 +710,120 @@ def ending_moon(stage):
             (4.0, next_up, lambda s, now: s.snd.melody("sneak"))]
 
 
+def den(s, now, dy=0, eyes="-", mouth="\\vvvv/", x=27, y=8):
+    """The dragon's den: a cave roof, and the dragon half under his pile of gold."""
+    s.put(0, 0, CAVE_TOP, s.attr(WHITE, False))
+    s.art(y + dy, x, dragon(eyes, mouth), DRAGON_COL)
+    s.art(16, x + 2, GOLD_PILE, GOLD_COL)
+    if bob(now, 2):                                     # the gold glints
+        s.put(17 + int(now * 3) % 4, x + 4 + int(now * 7) % 14, "*", s.attr(WHITE))
+
+
+def opening_dragon(stage):
+    """Level 6: a dragon wakes up under a pile of gold, and his huge ruby is gone!"""
+    def asleep(s, t, now):
+        den(s, now, dy=4)
+        for i in range(3):                              # z Z z floating up
+            k = (now * .8 + i / 3.0) % 1
+            s.put(13 - k * 10, 46 + k * 8 + i, "zZz"[i], s.attr(CYAN, i == 1))
+        s.typed(21, "Deep in Dragon Mountain, someone is asleep under the gold...", t * 2, CYAN)
+
+    def wake(s, t, now):
+        rise = min(1.0, t * 2.5)
+        shake = bob(now, 12) if t < .4 else 0
+        den(s, now, dy=int(4 - rise * 4) + shake, eyes="O", mouth="|VVVV|" if t > .4 else "\\vvvv/", x=27 + shake)
+        if t > .4:
+            s.big("ROAR!", 0, colors=lambda i: RED if bob(now + i, 8) else ORANGE)
+            if bob(now, 6):
+                s.burst(40, 14, 4, [RED, ORANGE, YELLOW], now, "~*", 10)
+        s.typed(21, "Where is my RUBY? My biggest, reddest ruby is GONE!", (t - .4) * 3, RED)
+
+    def quest(s, t, now):
+        s.big("DRAGON", 0, colors=lambda i: GREEN if (i + int(now * 3)) % 2 else ORANGE)
+        s.art(7 + bob(now, 2), 10, JEN, JEN_COL)
+        s.art(6, 44, dragon("O"), DRAGON_COL)
+        s.art(9, 28, RUBY, RED)
+        s.typed(16, "Find the dragon's HUGE RUBY!", t * 3, RED)
+        s.typed(18, "Bring it back to his den on Dragon Mountain.", (t - .3) * 3, YELLOW)
+        s.typed(20, "Push rocks into the river to make a bridge!", (t - .55) * 3, CYAN)
+
+    return [(5.0, asleep, lambda s, now: s.snd.melody("night")),
+            (5.0, wake, lambda s, now: (s.snd.melody("boo"), s.snd.boom())),
+            (6.0, quest, lambda s, now: s.snd.melody("quest"))]
+
+
+def ending_wish(stage):
+    """Level 6 won: Jennifer drops the huge ruby on the dragon's gold, and he gives her a wish."""
+    landed = {}
+
+    def carry(s, t, now):
+        den(s, now, dy=4, x=44)
+        x = int(-12 + t * 36)
+        s.art(9 + bob(now, 3), x, RUBY, RED)
+        s.art(14 + bob(now, 3), x - 2, JEN_LIFT, JEN_COL)
+        s.typed(21, "Jennifer carried the huge ruby all the way to the dragon's den...", t * 2, MAGENTA)
+
+    def drop(s, t, now):
+        k = min(1.0, t / .45)                           # the ruby flies up and lands on the pile
+        if k >= 1 and not landed:
+            landed["at"] = now
+            s.snd.boom()
+            s.burst(39, 16, 40, [RED, YELLOW, WHITE], now, "*+.")
+        eyes = "-" if k < 1 else ("O" if t < .75 else "^")
+        den(s, now, dy=4 if k < 1 else 0, eyes=eyes, x=44)
+        s.art(int(10 - math.sin(k * math.pi) * 8 + k * 5), int(24 + k * 13), RUBY, RED)
+        s.art(15, 22, JEN, JEN_COL)
+        if k >= 1:
+            s.big("CLUNK!", 2, colors=lambda i: RED if bob(now + i, 6) else YELLOW, x=2)
+            s.typed(21, "CLUNK! ...and the dragon opened his eyes!", (t - .45) * 4, YELLOW)
+
+    def wish(s, t, now):
+        s.put(0, 0, CAVE_TOP, s.attr(WHITE, False))
+        s.art(5 + bob(now, 2), 44, dragon("^"), DRAGON_COL)
+        s.art(13, 46, GOLD_PILE, GOLD_COL)
+        s.art(15, 37, RUBY, RED)
+        if bob(now, 3):
+            s.burst(40, 16, 3, [RED, WHITE], now, "*+.", 8)
+        s.art(13 + bob(now + 1, 2), 22, JEN, JEN_COL)
+        s.typed(2, "\"My ruby! You brought it back!", t * 3, GREEN)
+        s.typed(4, " Thank you, Jennifer.\"", (t - .2) * 4, GREEN)
+        s.typed(19, "\"For helping me, I will give you", (t - .4) * 3, YELLOW)
+        if t > .7:
+            s.text(21, "ONE WISH!\"", YELLOW if bob(now, 4) else WHITE)
+            s.fireworks(now, .6)
+
+    def wishing(s, t, now):
+        s.stars(now, 60)
+        s.art(10, 34, JEN_WISH, JEN_COL)
+        for i in range(12):                             # wishing stars swirl around her
+            a = now * 1.5 + i * math.pi / 6
+            r = 6 + 2 * math.sin(now + i)
+            s.put(12 + math.sin(a) * r / 2, 39 + math.cos(a) * r * 2, "*", s.attr(RAINBOW[i % len(RAINBOW)]))
+        s.typed(2, "Jennifer closed her eyes...", t * 3, MAGENTA)
+        s.typed(4, "...and made a wish.", (t - .3) * 3, MAGENTA)
+        if t > .65:
+            s.text(20, "What would YOU wish for?", YELLOW if bob(now, 2) else WHITE)
+
+    def the_end(s, t, now):
+        s.fireworks(now, .35)
+        s.big("THE END", 1, now=now)
+        s.art(9 + bob(now, 2), 10, JEN, JEN_COL)
+        s.art(8, 44, dragon("^"), DRAGON_COL)
+        s.art(16, 46, GOLD_PILE, GOLD_COL)
+        s.art(12 + bob(now + 1, 2), 26, RUBY, RED)
+        s.text(22, "Thank you for playing, hero!", YELLOW)
+
+    return [(5.5, carry, lambda s, now: s.snd.melody("home")),
+            (4.5, drop, lambda s, now: s.snd.melody("gold")),
+            (6.0, wish, lambda s, now: s.snd.melody("fanfare")),
+            (6.0, wishing, lambda s, now: s.snd.melody("journal")),
+            (6.0, the_end, lambda s, now: s.snd.melody("party"))]
+
+
 SCENES = {"town": opening_town, "crown": ending_crown, "ship": opening_ship, "ghosts": ending_ghosts,
           "rainbow": opening_rainbow, "rainbow_end": ending_rainbow,
-          "thief": opening_thief, "home": ending_home, "witches": opening_witches, "moon": ending_moon}
+          "thief": opening_thief, "home": ending_home, "witches": opening_witches, "moon": ending_moon,
+          "dragon": opening_dragon, "wish": ending_wish}
 
 
 # ================================================================ playing a scene

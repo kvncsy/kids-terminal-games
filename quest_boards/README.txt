@@ -8,7 +8,8 @@ keeps a copy of every board it changes in the old/ folder.
 
 Every place in the Quest is one text file in this folder. Boards are grouped
 into levels (1 is Robot Town, 2 is Spooky Islands, 3 is Rainbow Kingdom,
-4 is the Witches' Crown, 5 is the Whispering Forest). Each level starts on the board with the @ in it.
+4 is the Witches' Crown, 5 is the Whispering Forest, 6 is Dragon
+Mountain). Each level starts on the board with the @ in it.
 Change a board, or copy one to make a new place, then run "quest check" to
 look for mistakes.
 
@@ -46,7 +47,7 @@ A board file looks like this:
   intro:              the words in the box when the level starts
   opening: / ending:  the movie played at the start and at the end
                       (town, crown, ship, ghosts, rainbow, rainbow_end,
-                      thief, home, witches, moon;
+                      thief, home, witches, moon, dragon, wish;
                       they live in quest_scenes.py)
 
   1: to 9:            what robot 1 to 9 on the map says ("Name: words")

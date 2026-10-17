@@ -1,12 +1,13 @@
 # THE QUEST FOR THE GOLDEN CROWN    (type: quest)
 
-Five big adventures, one after another:
+Six big adventures, one after another:
   LEVEL 1  Robot Town       find the Golden Crown
   LEVEL 2  Spooky Islands   find the Ghost's Treasure
   LEVEL 3  Rainbow Kingdom  find the Pot of Gold
   LEVEL 4  Witches' Crown    go down, down, down to find it
   LEVEL 5  Whispering Forest  trade gold for the crown, and
                               bring it to Queen Maeve
+  LEVEL 6  Dragon Mountain   bring the dragon his huge ruby
 Win a level and the next one opens. Levels you have opened
 show up on the PICK A LEVEL screen when Quest starts.
 Every level keeps its own save.
