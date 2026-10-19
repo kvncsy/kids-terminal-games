@@ -31,7 +31,7 @@ OLD_DIR = os.path.join(q.BOARD_DIR, "old")
 EXIT_NAMES = ("north", "south", "east", "west", "up", "down")
 OPPOSITE = {"north": "south", "south": "north", "east": "west", "west": "east", "up": "down", "down": "up"}
 START_INFO = (("adventure", "Level name"), ("goal", "Goal (find ...)"), ("intro", "Words at the start"),
-              ("opening", "Movie at the start"), ("ending", "Movie at the end"))
+              ("opening", "Movie at the start"), ("ending", "Movie at the end"), ("open", "Open any time? (yes)"))
 UNDO_LIMIT = 300
 
 NAMES = {
@@ -40,13 +40,15 @@ NAMES = {
     "+": "heart", "l": "lamp", "?": "surprise box", "!": "the goal (wins the level)", "@": "where you start",
     "L": "lion", "H": "ghost", "E": "leprechaun", "F": "fairy", "V": "crow", "A": "witch", ",": "rat",
     "K": "Leprechaun King", "Q": "Queen Maeve", ">": "way down", "<": "way up",
+    "o": "rolling rock (rolls at you!)", "^": "pop-up spikes", "X": "crusher (slides up and down)",
+    "Z": "crusher (slides side to side)", "D": "fire spitter", "_": "trap floor (hidden cage)",
 }
 for k, name in q.KEYS.items():
     NAMES[k] = "%s key" % name
     NAMES[k.upper()] = "%s door" % name
 for d in "123456789":
     NAMES[d] = "robot %s (talks)" % d
-PALETTE = [c for c in " #%&~=:TO*$a+l?!@LHEFVA,KQ><rbygpcRBYGPC123456789"]
+PALETTE = [c for c in " #%&~=:TO*$a+l?!@LHEFVA,KQ><o^XZD_rbygpcRBYGPC123456789"]
 assert set(PALETTE) == q.LEGEND, set(PALETTE) ^ q.LEGEND
 
 KEY_HELP = [("type", "put a symbol"), ("Space", "rub out"), ("Enter", "brush again"), ("Tab", "all symbols"),

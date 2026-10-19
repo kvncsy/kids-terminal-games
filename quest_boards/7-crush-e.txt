@@ -1,0 +1,27 @@
+title: Crusher Alley
+west: road
+east: fire
+1: Crusher Bot: The crushers slam down! Run past when they go UP. Don't get squished!
+2: Slide Bot: Down the shaft, crushers slide side to side. Go when they pull back!
+map:
+############################################################
+#TTTTTTT#TT#T#TTTT#TTTTTTTT#TT#T#T#T##TTT#TTTTTTTT#T###TT###
+##TTT#TTT##T#TTTT#TTTTT##T#TTTTTTT  *+ #TTTTTTT#TTTTT#TTTTT#
+#TTTTTXXTTT  T#T  TTTXXTTT  TTT#TT     #T#TTT#TTTTT##TT#T#T#
+#TTTTT  T#T  ##T  TT#  TTT  T#T#T#  2  TTTTT#TTT#TTTTT#TT###
+##TT#T  TTT  TTT  #TT  TTT  TTTTTT     #TTTTTTTTTTTTTT##T#T#
+#TTT#T  TTTXXTTT  T#T  T#T  TTTTTT     T#TTTTTTTTTTTT#TTTTT#
+#TTTT#  T#T  TTT  TT#  T#T  TTTTTT     T##TTT#TT#TTTTT##TTT#
+   1                                                       #
+                XX             a                           #
+         $         $                                       #
+                          XX                               #
+                                                           #
+#TTTTTT##TTTTTTT####TTTT##TTTZZZ       ##TTTTTT#TTTTTTT#TTT#
+#TTTTTT#TTTTTTTTTTT##T#TT#TT#T#TTT     TTTTTT#TTTTTTTTTT#TT#
+#TT#TTTTTT##TTTTTT#TT#T#T#TTTTTT##       ZZZ##T##TT#T#TTTTT#
+#T#TT#T#T#T#T#TTT#TTTTTTT#TTTTTT##                _         
+#TTTTT#TTTTTTTTT#TT#TTTT#T#T#TTTTT       a        _    *    
+##TTTT#T#TTTTT#T#TT#TTTTT##TT#TTTT            +   _         
+#TT#TTTTTTTT#T#TTT##TTTTTTT#TTT#TTT#TTTT#T#TT##TTTTT##T##T##
+############################################################

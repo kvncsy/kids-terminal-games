@@ -9,7 +9,7 @@ keeps a copy of every board it changes in the old/ folder.
 Every place in the Quest is one text file in this folder. Boards are grouped
 into levels (1 is Robot Town, 2 is Spooky Islands, 3 is Rainbow Kingdom,
 4 is the Witches' Crown, 5 is the Whispering Forest, 6 is Dragon
-Mountain). Each level starts on the board with the @ in it.
+Mountain, 7 is Trap Road, a demo of the moving traps). Each level starts on the board with the @ in it.
 Change a board, or copy one to make a new place, then run "quest check" to
 look for mistakes.
 
@@ -45,6 +45,8 @@ A board file looks like this:
   adventure:          the level's name ("Spooky Islands")
   goal:               what the ! is ("the Ghost's Treasure")
   intro:              the words in the box when the level starts
+  open: yes           (optional) the level can be played any time, even
+                      before the levels in front of it are won
   opening: / ending:  the movie played at the start and at the end
                       (town, crown, ship, ghosts, rainbow, rainbow_end,
                       thief, home, witches, moon, dragon, wish;
@@ -83,6 +85,13 @@ MAP SYMBOLS
   Q        Queen Maeve (bring her the crown to win the level)
   A        a witch (vanishes when you come close, and leaves ammo)
   ,        a rat (fast! nibbles your gold or gems; step on it)
+  o        rolling rock (rolls at you when you walk in line with it: SQUISH!)
+  ^        pop-up spikes (they go up and down in a wave: run through when
+           they go down)
+  X        crusher that slides up and down (Z slides side to side); crushers
+           that touch move together, shove you, and squish you against walls
+  D        fire spitter (spits fireballs when you're in line with it; zap it)
+  _        trap floor: looks like ground, but SNAP! a cage of weak walls
   >        a way down (stairs, a hole, a well)
   <        the way back up
   1 to 9   a robot who talks

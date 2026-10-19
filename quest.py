@@ -75,7 +75,15 @@ CROW_FRIGHT = 4            # crows fly away when you come this close
 KING_PRICE = 15            # gold the Leprechaun King wants for the crown
 WITCH_FRIGHT = 3           # witches vanish (and leave ammo) when you come this close
 RAT_STEP = 0.18            # rats are fast!
-RAT_NIBBLE = 1.2           # seconds between nibbles       # seconds the rainbow shoes from a surprise box last
+RAT_NIBBLE = 1.2           # seconds between nibbles
+ROLL_STEP = 0.07           # a rolling rock moves one square this often (fast! get out of the way)
+ROLL_SIGHT = 25            # rocks start rolling when you're in line with them, this close
+SPIKE_CYCLE = 2.4          # pop-up spikes go up and down every this many seconds...
+SPIKE_UP = 1.0             # ...and stay up this long (in a wave, so there's always a way through)
+CRUSH_STEP = 0.16          # crushers slide one square this often
+FIRE_EVERY = 1.4           # a fire spitter spits at you this often when you're in line with it
+FIRE_STEP = 0.07           # and its fireballs fly one square this often
+FIRE_SIGHT = 30       # seconds the rainbow shoes from a surprise box last
 DARK_SIGHT, LAMP_SIGHT = 4.0, 6.5   # how far you can see on a dark board, without and with the lamp
 DEFAULT_INTRO = ("Walk with the ARROW keys. Walk into robots to talk to them. "
                  "Find the three keys and bring home the Golden Crown!")
@@ -83,7 +91,9 @@ ZAP_STEP = 0.035           # seconds for a zap to move one square
 RUN_STEP = 0.12            # hold an arrow to run: one step this often (about 8 a second)
 SHOT_GAP = 0.25            # and holding SPACE zaps this often
 HELD = 0.1                 # a key back this fast is being held down, not pressed again
-LEGEND = set(" #%&~=:TO*$a+l?rbygpcRBYGPCLHEFVKQA,<>!@123456789")
+LEGEND = set(" #%&~=:TO*$a+l?rbygpcRBYGPCLHEFVKQA,<>!@123456789o^XZD_")
+TRAPS = "oXZ"              # rolling rocks and crushers: they move, and go home when you come into a board
+FLY_OVER = " =~:^_"        # what zaps and fireballs fly over
 KEYS = {"r": "red", "b": "blue", "y": "yellow", "g": "green", "p": "purple", "c": "light blue"}
 DOORS = {k.upper(): k for k in KEYS}
 DIRS = {"north": (0, -1), "south": (0, 1), "west": (-1, 0), "east": (1, 0)}
@@ -97,16 +107,19 @@ RAINBOW = [RED, ORANGE, YELLOW, GREEN, CYAN, BLUE, MAGENTA]
 FANCY = {"#": "█", "%": "▒", "~": "≈", "=": "═", ":": "░", "T": "♣", "O": "■", "*": "♦", "$": "$", "a": "ä",
          "+": "♥", "L": "Ω", "H": "Ö", "E": "¥", "F": "ƒ", "?": "?", "l": "☼", "!": "♛",
          "&": "▓", "V": "v", "K": "K", "Q": "Q", "A": "A", ",": ",", ">": "▼", "<": "▲",
+         "o": "○", "^": "▲", "X": "≡", "Z": "≡", "D": "¤", "_": "_", "down": "·", "fire": "*",
          "key": "♀", "door": "◘", "friend": "☻", "player": "☺", "heart": "♥", "star": "★"}
 PLAIN = {"#": "█", "%": "%", "~": "~", "=": "=", ":": ":", "T": "T", "O": "O", "*": "*", "$": "$", "a": "a",
          "+": "+", "L": "L", "H": "G", "E": "E", "F": "F", "?": "?", "l": "i", "!": "W",
          "&": "#", "V": "v", "K": "K", "Q": "Q", "A": "A", ",": ",", ">": ">", "<": "<",
+         "o": "o", "^": "^", "X": "X", "Z": "Z", "D": "D", "_": "_", "down": ".", "fire": "*",
          "key": "k", "door": "▒", "friend": "&", "player": "@", "heart": "+", "star": "*"}
 # the Linux console with the kids' font (KIDS_FANCY=1, see kids.bashrc): the old PC symbols, but no star or crown
 CONSOLE = dict(FANCY, **{"!": "W", "star": "*"})
 COLORS = {"#": WHITE, "%": YELLOW, "~": BLUE, "=": ORANGE, "T": GREEN, "O": MAGENTA, "*": CYAN, "$": YELLOW,
           "a": CYAN, "+": RED, "L": RED, "H": WHITE, "E": GREEN, "F": MAGENTA, "?": MAGENTA, "l": YELLOW, "!": YELLOW,
-          "&": GREEN, "V": WHITE, "K": GREEN, "Q": MAGENTA, "A": MAGENTA, ",": ORANGE, ">": CYAN, "<": CYAN}
+          "&": GREEN, "V": WHITE, "K": GREEN, "Q": MAGENTA, "A": MAGENTA, ",": ORANGE, ">": CYAN, "<": CYAN,
+          "o": ORANGE, "^": RED, "X": RED, "Z": RED, "D": ORANGE, "_": WHITE}
 WALKABLE = " =:"           # ground you can stand on (bridges and rainbows stay put when you walk over them)
 
 
@@ -125,6 +138,7 @@ class Board:
         self.start = None
         self.boulder_homes = set()
         self.crow_homes = set()
+        self.trap_homes = {}          # where each rolling rock and crusher starts
         for y, row in enumerate(self.grid):
             for x, c in enumerate(row):
                 if c == "@":
@@ -134,6 +148,8 @@ class Board:
                     self.boulder_homes.add((x, y))
                 elif c == "V":
                     self.crow_homes.add((x, y))
+                elif c in TRAPS:
+                    self.trap_homes[(x, y)] = c
 
     def at(self, x, y):
         return self.grid[y][x]
@@ -180,7 +196,7 @@ def parse_board(path):
                     info["level"] = int(value)
                 else:
                     problems.append("line %d: the level should be a number, like 'level: 2'" % n)
-            elif key in ("adventure", "goal", "intro", "opening", "ending"):
+            elif key in ("adventure", "goal", "intro", "opening", "ending", "open"):
                 info[key] = value
             elif key == "box":
                 if value in KEYS:
@@ -280,6 +296,12 @@ def where_problems(here, start):
         if said != (x, y, z):
             out.append("%s: the name says %s, but this board is %s from the start" % (b.file, where, where_name(x, y, z)))
     return out
+
+
+def open_anytime():
+    """Levels whose start board says 'open: yes' (like the Trap Road demo): you can play them any time."""
+    boards, _ = load_world()
+    return {b.level for b in boards.values() if b.start and b.info.get("open", "").lower() in ("yes", "true", "1", "on")}
 
 
 def level_list():
@@ -390,6 +412,12 @@ def pick_look():
     return CONSOLE if os.environ.get("KIDS_FANCY") == "1" else PLAIN
 
 
+def spikes_up(x, y, now):
+    """Pop-up spikes go up and down in a wave that rolls east (and south) at running speed,
+    so if you run in just as they go down, you can ride the gap all the way through."""
+    return (now - (x + y) * RUN_STEP) % SPIKE_CYCLE < SPIKE_UP
+
+
 def glyph(L, t, now):
     """The symbol and color for one square of the map."""
     if t in KEYS:
@@ -420,6 +448,8 @@ def glyph(L, t, now):
         return L["&"], color(GREEN, False)
     if t == "A":
         return "A", color(MAGENTA if int(now * 3) % 4 else GREEN)
+    if t == "D":
+        return L["D"], color(ORANGE if int(now * 4) % 2 else YELLOW)
     return L.get(t, t), color(COLORS.get(t, WHITE), t not in "#")
 
 
@@ -443,13 +473,14 @@ class Game:
         self.trying = trying          # (level, board) to try out a board from the editor: nothing is saved
         self.last_key, self.last_key_at, self.last_step, self.last_shot = None, 0.0, 0.0, 0.0
         self.levels = level_list()
+        self.anytime = open_anytime()
         self.progress = self.read_progress()
         if trying:
             self.try_board(*trying)
         elif len(self.open_levels()) > 1:
             self.open_level_screen()
         else:
-            self.start_level(min(self.levels))
+            self.start_level(min(self.open_levels()))
 
     # ------------------------------------------------------------ levels and saving
     def read_progress(self):
@@ -489,7 +520,7 @@ class Game:
             pass
 
     def open_levels(self):
-        return [lv for lv in self.levels if lv <= self.progress["unlocked"]]
+        return [lv for lv in self.levels if lv <= self.progress["unlocked"] or lv in self.anytime]
 
     def start_level(self, level):
         self.level = level
@@ -607,6 +638,11 @@ class Game:
         self.msg, self.msg_until, self.msg_color = "", 0.0, WHITE
         self.hurt_until = 0.0
         self.next_lion = self.next_zap = self.next_ghost = self.next_lep = self.next_fairy = self.next_crow = self.next_rat = 0.0
+        self.next_roll = self.next_crush = self.next_fire = 0.0
+        self.rolling = {}         # rolling rocks on their way: {(x, y): (dx, dy)}
+        self.crushing = {}        # which way each crusher is sliding
+        self.fires = []           # fireballs: [x, y, dx, dy]
+        self.spat = {}            # when each fire spitter can spit again
         self.hint_until = 0.0
 
     def save(self):
@@ -836,6 +872,29 @@ class Game:
             self.snd.splash()
             self.say("Splash! You can't swim here.", BLUE, 1.5)
             return
+        elif t == "^":
+            if spikes_up(nx, ny, time.time()):
+                self.hurt("OUCH! Spikes! Wait for them to go down.")
+                return
+            self.px, self.py = nx, ny                   # spikes that are down: tiptoe over them
+            return
+        elif t == "_":
+            b.set(nx, ny, " ")
+            self.px, self.py = nx, ny
+            self.spring_cage(nx, ny)
+            return
+        elif t == "o":
+            self.snd.bump()
+            self.say("A big round rock. Careful... rocks like this ROLL!", ORANGE, 2)
+            return
+        elif t in "XZ":
+            self.snd.bump()
+            self.say("A crusher! Don't get squished!", RED, 2)
+            return
+        elif t == "D":
+            self.snd.bump()
+            self.say("A fire spitter! Stay out of its way... or zap it!", ORANGE, 2)
+            return
         elif t == "%":
             self.snd.bump()
             self.say("This wall looks weak. Zap it with SPACE!", YELLOW)
@@ -943,6 +1002,14 @@ class Game:
         for x, y in b.boulder_homes:
             if b.at(x, y) == " " and (x, y) != (self.px, self.py):
                 b.set(x, y, "O")
+        for y in range(BOARD_H):                    # rolling rocks and crushers too
+            for x in range(BOARD_W):
+                if b.at(x, y) in TRAPS:
+                    b.set(x, y, " ")
+        for (x, y), c in b.trap_homes.items():
+            if b.at(x, y) == " " and (x, y) != (self.px, self.py):
+                b.set(x, y, c)
+        self.rolling, self.crushing, self.fires, self.spat = {}, {}, [], {}
         self.birds = []
         for x, y in b.crow_homes:                   # and the crows come back to their trees
             if b.at(x, y) == " " and (x, y) != (self.px, self.py):
@@ -958,7 +1025,7 @@ class Game:
         self.snd.zap()
         self.zaps.append([self.px, self.py, self.facing[0], self.facing[1]])
 
-    def hurt(self):
+    def hurt(self, why="OUCH! A lion bumped you."):
         now = time.time()
         if now < self.hurt_until:
             return
@@ -970,7 +1037,37 @@ class Game:
             self.px, self.py = self.entry
             self.say_box("Oof!", "The robots carried you back to safety. Your hearts are full again!")
         else:
-            self.say("OUCH! A lion bumped you.", RED)
+            self.say(why, RED)
+
+    def spring_cage(self, x, y):
+        """SNAP! A hidden trap: weak walls spring up all around you. Zap your way out."""
+        b = self.board
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                cx, cy = x + dx, y + dy
+                if (dx or dy) and 0 <= cx < BOARD_W and 0 <= cy < BOARD_H and b.at(cx, cy) == " ":
+                    b.set(cx, cy, "%")
+        self.snd.door()
+        self.snd.boom()
+        self.burst(x, y, 20, [YELLOW, WHITE], "%#.")
+        if self.ammo < 2:
+            self.ammo += 3
+            self.say("SNAP! A TRAP! Lucky you, there are 3 zaps in here. Zap your way out!", YELLOW, 4)
+        else:
+            self.say("SNAP! IT'S A TRAP! Zap your way out with SPACE!", YELLOW, 4)
+
+    def in_line(self, x, y, reach, through=" "):
+        """Which way to go from (x, y) to get straight to you, if nothing is in the way."""
+        dx, dy = self.px - x, self.py - y
+        if (dx and dy) or not (dx or dy) or abs(dx) + abs(dy) > reach:
+            return None
+        sx, sy = (dx > 0) - (dx < 0), (dy > 0) - (dy < 0)
+        cx, cy = x + sx, y + sy
+        while (cx, cy) != (self.px, self.py):
+            if self.board.at(cx, cy) not in through:
+                return None
+            cx, cy = cx + sx, cy + sy
+        return sx, sy
 
     def boo(self):
         """A ghost touched you: no hearts lost, but you're scared back to where you came in."""
@@ -1111,7 +1208,14 @@ class Game:
             b.set(x, y, " ")
             self.snd.push()
             return True
-        return t not in " =~:"                       # zaps fly over ground, bridges, rainbows and water
+        if t == "D":
+            b.set(x, y, " ")
+            self.score += 20
+            self.snd.poof()
+            self.burst(x, y, 15, [ORANGE, YELLOW, RED])
+            self.say("ZAP! The fire spitter fizzles out.", GREEN, 1.5)
+            return True
+        return t not in FLY_OVER                     # zaps fly over ground, bridges, rainbows, water and spikes
 
     def update(self, now):
         if self.screen in ("levels", "cut") or self.dialog or self.won:
@@ -1164,6 +1268,7 @@ class Game:
                 elif 0 <= tx < BOARD_W and 0 <= ty < BOARD_H and b.at(tx, ty) == " ":
                     b.set(x, y, " ")
                     b.set(tx, ty, ",")
+        self.traps(now)
         if now >= self.next_fairy:
             self.next_fairy = now + FAIRY_STEP
             for x, y in [(x, y) for y in range(BOARD_H) for x in range(BOARD_W) if b.at(x, y) == "F"]:
@@ -1223,6 +1328,108 @@ class Game:
                     b.set(x, y, " ")
                     b.set(tx, ty, "H")
 
+    def traps(self, now):
+        """Things that move and try to get you: spikes, rolling rocks, crushers and fire spitters."""
+        b = self.board
+        if b.at(self.px, self.py) == "^" and spikes_up(self.px, self.py, now):
+            self.hurt("OUCH! The spikes popped up! Keep moving!")
+        if now >= self.next_roll:
+            self.next_roll = now + ROLL_STEP
+            for x, y in [(x, y) for y in range(BOARD_H) for x in range(BOARD_W) if b.at(x, y) == "o"]:
+                d = self.rolling.pop((x, y), None) or self.in_line(x, y, ROLL_SIGHT)
+                if not d:
+                    continue                            # sitting still... until you walk in line with it
+                tx, ty = x + d[0], y + d[1]
+                if (tx, ty) == (self.px, self.py):
+                    b.set(x, y, " ")                    # SQUISH! (and the rock breaks)
+                    self.burst(tx, ty, 20, [ORANGE, WHITE], "o.*")
+                    self.hurt("SQUISH! A rolling rock flattened you! Be quick!")
+                elif 0 <= tx < BOARD_W and 0 <= ty < BOARD_H and b.at(tx, ty) == " ":
+                    b.set(x, y, " ")
+                    b.set(tx, ty, "o")
+                    self.rolling[(tx, ty)] = d
+                elif 0 <= tx < BOARD_W and 0 <= ty < BOARD_H and b.at(tx, ty) == "~":
+                    b.set(x, y, " ")
+                    b.set(tx, ty, "=")                  # it rolls into the water and makes a bridge
+                    self.snd.bridge()
+                else:
+                    self.snd.push()                     # THUD. It stops.
+        if now >= self.next_crush:
+            self.next_crush = now + CRUSH_STEP
+            ways, self.crushing = self.crushing, {}
+            for group in self.crusher_groups():
+                self.crush(group, ways)
+        for x, y in [(x, y) for y in range(BOARD_H) for x in range(BOARD_W) if b.at(x, y) == "D"]:
+            if now >= self.spat.get((x, y), 0):
+                d = self.in_line(x, y, FIRE_SIGHT, FLY_OVER)
+                if d:
+                    self.fires.append([x, y, d[0], d[1]])
+                    self.spat[(x, y)] = now + FIRE_EVERY
+                    self.snd.whoosh()
+        if now >= self.next_fire:
+            self.next_fire = now + FIRE_STEP
+            for f in list(self.fires):
+                f[0] += f[2]
+                f[1] += f[3]
+                if (f[0], f[1]) == (self.px, self.py):
+                    self.fires.remove(f)
+                    self.burst(f[0], f[1], 12, [RED, ORANGE, YELLOW])
+                    self.hurt("OUCH! Hot hot hot! A fireball got you!")
+                elif not (0 <= f[0] < BOARD_W and 0 <= f[1] < BOARD_H) or b.at(f[0], f[1]) not in FLY_OVER:
+                    self.fires.remove(f)
+
+    def crusher_groups(self):
+        """Crushers that touch move together, as one big block."""
+        b = self.board
+        cells = {(x, y): b.at(x, y) for y in range(BOARD_H) for x in range(BOARD_W) if b.at(x, y) in "XZ"}
+        groups, seen = [], set()
+        for c in cells:
+            if c in seen:
+                continue
+            group, todo = [], [c]
+            seen.add(c)
+            while todo:
+                x, y = todo.pop()
+                group.append((x, y))
+                for n in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+                    if cells.get(n) == cells[c] and n not in seen:
+                        seen.add(n)
+                        todo.append(n)
+            groups.append(group)
+        return groups
+
+    def crush(self, group, ways):
+        """Slide one crusher a square. It shoves you along, squishes you against a wall, and turns back at walls."""
+        b = self.board
+        kind = b.at(*group[0])
+        d = ways.get(group[0])
+        ahead = lambda d: [(x + d[0], y + d[1]) for x, y in group if (x + d[0], y + d[1]) not in group]
+        free = lambda c: 0 <= c[0] < BOARD_W and 0 <= c[1] < BOARD_H and b.at(*c) == " "
+        if not d:                                       # starting off: down (or right), unless that's blocked
+            d = (0, 1) if kind == "X" else (1, 0)
+            if not all(free(c) or c == (self.px, self.py) for c in ahead(d)):
+                d = (-d[0], -d[1])
+        front = ahead(d)
+        if (self.px, self.py) in front:
+            shove = (self.px + d[0], self.py + d[1])
+            if 0 <= shove[0] < BOARD_W and 0 <= shove[1] < BOARD_H and b.at(*shove) in WALKABLE \
+                    and all(free(c) for c in front if c != (self.px, self.py)):
+                self.px, self.py = shove                # shoved along!
+            else:
+                self.hurt("SQUISH! The crusher got you! Be quick!")
+                d = (-d[0], -d[1])
+                front = []
+        if front and all(free(c) or c == (self.px, self.py) for c in front):
+            for x, y in group:
+                b.set(x, y, " ")
+            group = [(x + d[0], y + d[1]) for x, y in group]
+            for c in group:
+                b.set(c[0], c[1], kind)
+        elif front:
+            d = (-d[0], -d[1])                          # bonk: back the other way
+        for c in group:
+            self.crushing[c] = d
+
     # ------------------------------------------------------------ drawing
     def glyph(self, t, now):
         return glyph(self.look, t, now)
@@ -1251,13 +1458,20 @@ class Game:
         for y in range(BOARD_H):
             for x in range(BOARD_W):
                 t = b.at(x, y)
-                if t == " ":
+                if t in " _":                           # (a trap floor looks just like the ground)
                     continue
                 # in the dark you only see near you (squares are tall, so count across as half) - and the ghosts
                 if b.dark and t != "H" and ((x - self.px) * 0.5) ** 2 + (y - self.py) ** 2 > sight:
                     continue
-                ch, a = self.glyph(t, now)
+                if t == "^":
+                    up = spikes_up(x, y, now)
+                    ch, a = (self.look["^"], color(RED)) if up else (self.look["down"], color(WHITE, False))
+                else:
+                    ch, a = self.glyph(t, now)
                 put(scr, oy + y, ox + x, ch, a)
+        for x, y, dx, dy in self.fires:
+            if 0 <= x < BOARD_W and 0 <= y < BOARD_H:
+                put(scr, oy + y, ox + x, self.look["fire"], color(RED if int(now * 10) % 2 else YELLOW))
         for x, y, dx, dy in self.zaps:
             put(scr, oy + y, ox + x, "•" if self.look is not PLAIN else ("-" if dx else "|"), color(WHITE))
         dt = min(0.1, now - getattr(self, "last_draw", now))

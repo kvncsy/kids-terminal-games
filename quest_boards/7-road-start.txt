@@ -1,0 +1,31 @@
+title: Trap Road
+adventure: Trap Road
+goal: the Trap Road Trophy
+open: yes
+intro: A demo of MOVING TRAPS! Spikes pop up, rocks roll, crushers squish and fire spitters spit. Be QUICK, Jennifer!
+east: crush
+1: Trap Bot: This is TRAP ROAD! Things move, pop up and roll at you. Hold an arrow to run!
+2: Spike Bot: Spikes pop up out of nowhere! Watch the wave, and run when they go down.
+3: Rock Bot: Rocks up on the hills roll down when you walk past. Don't stop under them!
+map:
+############################################################
+#T#TTTTTTTT#TTTTTT##TTT#TTTTTTTTTTTTT#TTT##TTTT#T#TTT##TTTT#
+#TTTTTTTTTTTTTTTT#TTTT#TT#To#TTTT#TT##ToTTTT#TTTTTToTTTTTTT#
+##TT#T#TTTTTTTTTTTTTTTTTTTT TT#TTT#TTTT TTTT#TTTTTT TTT##T##
+#T#TTTT#T##TT##TTTTTTTTTTTT ##TTT#TTTT# T#TT#TTTT#T T#TTT#T#
+###TTTTT#T#TTTTTTTT#T#TTT#T TT#TT#TTTTT #T##TTTTTTT TTTTT###
+##TTT#TTTTTTTTT#TTT#TTTT##T TTTTTTTTTTT TT#TTTT#TT# TTT#T#T#
+##TT####TTTTTTTTT##TT#TTTTT TTTTTTT#TTT TTTTTTTTTTT T##TTTT#
+#     1     ^^^^^^^^^^  3                             +     
+#           ^^^^^^^^^^        $                             
+#  @        ^^^^^^^^^^              *                    o  
+#      a    ^^^^^^^^^^                    $                 
+#   a    2  ^^^^^^^^^^  +                       $           
+###TT#TTTTTTTTTT##TTTTTTTT#TTTTTT #TT#TT#TTT# TTTTTT#T#T##T#
+#T#TTTTTT#T#T#TTTTTTTT#TT#T#TTTTT #TT#TT#TTTT TT#TTTT#TTTTT#
+##TTTTTTTTTTT#T#TTTTTTT#TTTTT#TTT TTTTTTTT### TTTT#TTTTTTTT#
+#TTTTTTTTTTT##TTTTTTTTT#TT#TT#TTT T#TTTTTTTTT #TTTTTTTTTTT##
+#T#TTTTTTTTTTTT####TTTTTT#T#TT#TT T##TTTTTTTT T#TTTTT#TTT#T#
+#TTTTT#TTTTT#TT#TTTT#TTTT#TTTT#T#o#TT##T#TTTTo#TTTTTTT#TTT##
+#TTTTTTTTTTTTTTTT#TTTTTTT#TTTT#TTTT#T#TTTTT#TTTT#TTTTTTT#T##
+############################################################
