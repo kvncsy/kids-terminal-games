@@ -1,0 +1,27 @@
+title: The Old Temple
+box: y
+west: river
+south: rock
+1: Temple Bot: The temple is full of old traps. Run past the crushers when they go UP!
+map:
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+&TTTTTT&TXXTTTT  &TT&XXTTTT  TT#########D#######D##########&
+&TTTTTTTT  T&TT  TT&T  TTTT  &T#                          #&
+&TTT&TTTT  TT&TXXT&T&  T&TTXX&&# a                     ?  #&
+                                        $                 #&
+                                                          #&
+&&T1TTT&T####################&&#    ##      ##      ##    #&
+&TTTTT&TTTT&&TTT&TT&TTTTTTT&&&T#    ##      ##      ##    #&
+&TTTTTTTTT&TTT&TTTTTTTTTTTTTTT&#                          #&
+&TT&TT&TT&&&TTTT&&TTTTT&TTTTT&&#                          #&
+&TTTT&&TTTTT&TT&T&&TTT&&TT&T&TT# ZZZ                      #&
+&&TTTTTTTTTT&T&TTTTTTT&T&T&TTT&#                          #&
+&TTTT&TTTT&&&TT&TTT&T&TTTT&&TTT#               $          #&
+&&TTT&TTTTT&TTTTT&&T&TTTTTTTT&T#                          #&
+&TT&TTTTT&T&TTTTTTTTT&&TTTTTT&T#    ##     #Y#      ##    #&
+&&&&&TTTTTTT&TT&&&&TTTT&TTTTTTT#    ##     #W#      ##    #&
+&TTTTTTTTTTTT&TTT&TTTTTT&&&&TT&#       L   ###            #&
+&&TT&&T&&&&&T&&TT&T&&&&TT&T&TTT#  *            ^^^^^    + #&
+&TTTTTTTTTTTTT&TTT&TTTTTTT&&TTT#               ^^^^^      #&
+&&TT&&T&TT&TTTTT&&T&T&TTT&TTTT&#################   ########&
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&   &&&&&&&&&

@@ -194,6 +194,18 @@ JEN_LIFT = ["  ,~~~~~,  ", " ( (^_^) ) ", " )\\|_|/ ( ", "   / | \\   "]
 JEN_WISH = ["  ,~~~~~,  ", " ( (-_-) ) ", " ) /|_|\\ ( ", "   / | \\   "]
 CAVE_TOP = "VvVVvVvVVvvVvVVvVvvVVvVvVVvVvvVVvVvVVvVVvvVvVVvVvvVVvVVvVvVvVVvVvvVVvVvVVvVvVVvV"
 
+
+def lion(eyes="o", mouth="\\_/", crown=False):
+    """A lion's face in a big mane (with a crown, for the Lion Queen)."""
+    face = ["  .@@@@@.  ", " @@(%s %s)@@ " % (eyes, eyes), "@@@ (Y) @@@", " @@ %s @@ " % mouth, "  '@@@@@'  "]
+    return (["   *^*^*   "] if crown else []) + face
+
+
+HUNTER = ["  _____  ", " |_____| ", "  (>_<)  ", " /|===|\\ ", "  /   \\  "]
+LION_COL = {"@": ORANGE, ".": ORANGE, "'": ORANGE, "*": YELLOW, "o": WHITE, "O": RED, "-": WHITE, "|": RED,
+            "default": YELLOW}
+HUNTER_COL = {"_": GREEN, "|": GREEN, ">": WHITE, "<": WHITE, "=": ORANGE, "default": WHITE}
+
 HERO_COL = {"^": WHITE, "_": WHITE, "(": WHITE, ")": WHITE, "default": YELLOW}
 ROBOT_COL = {"o": WHITE, "^": WHITE, "[": WHITE, "]": WHITE, "_": WHITE, "default": ORANGE}
 GHOST_COL = {"o": CYAN, "O": CYAN, "^": CYAN, "v": CYAN, "default": WHITE}
@@ -820,10 +832,124 @@ def ending_wish(stage):
             (6.0, the_end, lambda s, now: s.snd.melody("party"))]
 
 
+def jungle_trees(s, now):
+    s.art(4, 0, TREE, TREE_COL); s.art(3, 70, TREE, TREE_COL); s.art(9, 64, TREE, TREE_COL); s.art(10, 4, TREE, TREE_COL)
+    s.put(19, 0, "wWw," * 20, s.attr(GREEN, False))          # jungle grass
+
+
+def bars(s, x, y, w, h, col=WHITE):
+    """The bars of a cage, over whoever is inside."""
+    for i in range(h):
+        for j in range(0, w // 3 * 3 + 1, 3):
+            s.put(y + i, x + j, "|", s.attr(col))
+    s.put(y - 1, x, "=" * (w // 3 * 3 + 1), s.attr(col))
+    s.put(y + h, x, "=" * (w // 3 * 3 + 1), s.attr(col))
+
+
+def opening_hunters(stage):
+    """Level 7: hunters sneak up on the Lion Queen and lock her in a cage."""
+    def jungle(s, t, now):
+        jungle_trees(s, now)
+        s.art(9 + bob(now, 2), 34, lion("o", "\\_/", True), LION_COL)
+        s.typed(1, "Deep in the green jungle lived the LION QUEEN...", t * 2, YELLOW)
+        s.typed(3, "...and all her lions.", (t - .45) * 3, ORANGE)
+
+    def caught(s, t, now):
+        jungle_trees(s, now)
+        k = min(1.0, t * 2.2)
+        for i, x in enumerate((-4, 72)):                 # hunters sneak in from both sides
+            hx = int(x + (k * 18 if x < 0 else -k * 18))
+            s.art(13, hx, HUNTER, HUNTER_COL)
+        drop = min(1.0, max(0.0, (t - .35) * 4))          # and down comes the cage!
+        if drop > 0:
+            bars(s, 31, int(-6 + drop * 15), 18, 7)
+        s.art(9, 34, lion("O" if drop >= 1 else "o", "|O|" if drop >= 1 else "\\_/", True), LION_COL)
+        if drop >= 1:
+            s.big("ROAR!", 0, colors=lambda i: RED if bob(now + i, 8) else ORANGE)
+            s.typed(21, "Oh no! Sneaky hunters locked her in a CAGE!", (t - .6) * 4, RED)
+
+    def quest(s, t, now):
+        s.big("LIONS", 0, colors=lambda i: ORANGE if (i + int(now * 3)) % 2 else YELLOW)
+        s.art(7 + bob(now, 2), 10, JEN, JEN_COL)
+        bars(s, 47, 8, 18, 6)
+        s.art(7, 51, lion("o", "\\_/", True), LION_COL)
+        s.typed(15, "Free the LION QUEEN!", t * 3, YELLOW)
+        s.typed(17, "First set her 6 lions free from the hunters' cages.", (t - .25) * 3, ORANGE)
+        s.typed(19, "Zap weak yellow walls. Keys open locked cages.", (t - .5) * 3, CYAN)
+        s.typed(21, "And watch out for TRAPS!", (t - .7) * 4, RED)
+
+    return [(5.0, jungle, lambda s, now: s.snd.melody("night")),
+            (5.5, caught, lambda s, now: (s.snd.melody("boo"), s.snd.boom())),
+            (6.5, quest, lambda s, now: s.snd.melody("quest"))]
+
+
+def ending_roar(stage):
+    """Level 7 won: the six free lions roar together, the cage breaks, and the Lion Queen gives Jennifer a ride."""
+    broke = {}
+
+    def lions_come(s, t, now):
+        bars(s, 31, 9, 18, 6)
+        s.art(8, 35, lion("o", "\\_/", True), LION_COL)
+        for i in range(6):                                # lions running in from both sides
+            side, row = (-1 if i % 2 == 0 else 1), i // 2
+            to = 40 + side * (15 + row * 8) - 5
+            x = int(to + side * 45 * (1 - min(1.0, t * 1.4 - row * .15)))
+            s.art(7 + row * 5 + bob(now + i, 4), x, lion(), LION_COL)
+        s.typed(22, "The six lions Jennifer freed came running...", t * 2, YELLOW)
+
+    def roar(s, t, now):
+        if not broke:
+            broke["at"] = now
+            s.snd.boom()
+            s.burst(40, 12, 60, [WHITE, YELLOW, ORANGE], now, "|=-")
+        s.big("ROAR!", 0, colors=lambda i: RED if bob(now + i, 8) else ORANGE)
+        for i in range(6):
+            side = -1 if i % 2 == 0 else 1
+            s.art(7 + (i // 2) * 5, 40 + side * (15 + (i // 2) * 8) - 5, lion("O", "|O|"), LION_COL)
+        s.art(9, 34, lion("O", "|O|", True), LION_COL)
+        if bob(now, 5):
+            s.burst(40, 12, 4, [WHITE, YELLOW], now, "|=", 14)
+        s.typed(22, "ROOOAAAR! They roared so loud the cage broke!", (t - .2) * 3, ORANGE)
+
+    def thanks(s, t, now):
+        s.art(9 + bob(now, 2), 46, lion("^", "\\_/", True), LION_COL)
+        s.art(11 + bob(now + 1, 2), 22, JEN, JEN_COL)
+        s.typed(2, "\"Thank you, Jennifer! You saved me", t * 3, YELLOW)
+        s.typed(4, " and every one of my lions.\"", (t - .25) * 3, YELLOW)
+        s.typed(18, "\"You are a friend of the jungle,", (t - .5) * 3, GREEN)
+        if t > .75:
+            s.text(20, "FOREVER!\"", GREEN if bob(now, 4) else WHITE)
+            s.fireworks(now, .6)
+
+    def ride(s, t, now):
+        jungle_trees(s, now)
+        x = int(-20 + t * 95)
+        s.art(6 + bob(now, 6), x + 3, JEN, JEN_COL)        # Jennifer riding on the Lion Queen
+        s.art(10 + bob(now, 6), x, lion("^", "\\_/", True), LION_COL)
+        for i in range(3):
+            s.art(12 + bob(now + i, 6), x - 14 - i * 13, lion("^"), LION_COL)
+        s.typed(1, "And the Lion Queen gave Jennifer a ride all the way home!", t * 2, MAGENTA)
+
+    def the_end(s, t, now):
+        s.fireworks(now, .35)
+        s.big("THE END", 1, now=now)
+        s.art(10 + bob(now, 2), 14, JEN, JEN_COL)
+        s.art(9, 34, lion("^", "\\_/", True), LION_COL)
+        s.art(11 + bob(now + 1, 2), 54, lion("^"), LION_COL)
+        s.text(22, "Thank you for playing, hero!", YELLOW)
+
+    return [(5.0, lions_come, lambda s, now: s.snd.melody("home")),
+            (4.5, roar, lambda s, now: s.snd.melody("boo")),
+            (6.0, thanks, lambda s, now: s.snd.melody("fanfare")),
+            (6.0, ride, lambda s, now: s.snd.melody("journal")),
+            (6.0, the_end, lambda s, now: s.snd.melody("party"))]
+
+
 SCENES = {"town": opening_town, "crown": ending_crown, "ship": opening_ship, "ghosts": ending_ghosts,
           "rainbow": opening_rainbow, "rainbow_end": ending_rainbow,
           "thief": opening_thief, "home": ending_home, "witches": opening_witches, "moon": ending_moon,
-          "dragon": opening_dragon, "wish": ending_wish}
+          "dragon": opening_dragon, "wish": ending_wish,
+          "hunters": opening_hunters, "roar": ending_roar}
 
 
 # ================================================================ playing a scene

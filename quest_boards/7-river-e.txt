@@ -1,0 +1,27 @@
+title: The Wide River
+west: jungle
+east: temple
+south: camp
+1: River Bot: No swimming! The river cuts this jungle in two. Look for a way round to the other side.
+map:
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+&T&T&TT&TTTTTTT&T&oT&&TTT&T&&&oTTT&TTTT&&ToTTTT&TTTTTTTTTT&&
+&TT&TTTTTTT&TTTT&T T&&TTT&TTT& TTTTTT&T&TT TTT&&TTT&TT&TTTT&
+&TT&&TT&T&TTT&&&T& T&TTTT&TT&T TTTTT&T&&TT &T&&&&&T&&TTT&TT&
+            $                                               
+                                                            
+&  1                                  a           $        &
+& ~~     ~~     ~~      =     ~~     ~~     ~~     ~~     ~&
+&~~~~~~~~~~~~~~~~~~~~~~~=~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~&
+&~~~~~~~~~~~~~~~~~~~~~ #R# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~&
+&~~~~~~~~~~~~~~~~~~~~~ #W# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~&
+&~~~~~~~~~~~~~~~~~~~~~ ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~&
+&~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~&
+&&&T~~~&TTTTT~~~T&TT&T~~~T&TTTT~~~T&&TT&~~~&T&TTT~~~TTTTTT~&
+&                                        TT&&&&TTT      TTT&
+        *                       +  T                L   T&T&
+          a                        &          O           D&
+&TT&TTT&TTTT&&TTT&&&TTT&TTTT   &TTTT    L     O       g TTT&
+&TT&TT&TTT&TTTTTTTTT&TTT&TT&   TTTT&                    TTT&
+&TT&T&TTTTTTTTTTTTTTT&T&&T&T   T&&T&&&T&&T&&TTT&T&&T&TTTTT&&
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&   &&&&&&&&&&&&&&&&&&&&&&&&&&&&&

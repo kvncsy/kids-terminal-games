@@ -1,0 +1,26 @@
+title: Lion Rock
+north: temple
+west: camp
+1: Old Bot: The Lion Queen is in that cage. Only the roar of ALL her lions can break it open!
+map:
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&   &&&&&&&&&
+&&TTTTTT&&TToTTTT&TTT&oTT&TTT&&TTTTTTTo&TT&&TTT&   TTTT&TTT&
+&&T                                                     oTT&
+&TT  +            ^^^^^^^^^^^^^^^^^^^^^^^^^              &&&
+&&&       a       ^                       ^              TT&
+&&&               ^     #############     ^              TT&
+&TT               ^     ##MMMMMMMMM##     ^       L      &T&
+&&T   1           ^     ##M       M##     ^              TT&
+&&T               ^     ##M       M##     ^              T&&
+                  ^     ##M       M##     ^              TT&
+                  ^       M   U   M##     ^         *   DTT&
+                  ^     ##M       M##     ^              T&&
+&TT           $   ^     ##M       M##     ^              TT&
+&TT               ^     ##M       M##     ^              &&&
+&T&               ^     ##MMMMMMMMM##     ^     L        TT&
+&T&       L       ^     ###### ######     ^              T&&
+&TT               ^                       ^              T&&
+&TT               ^^^^^^^^^^^^^^^^^^^^^^^^^   a          &T&
+&TTo                                                     &T&
+&&TTTT&T&TTTTT&&TTT&TTTTTTTTTT&&TT&T&&&T&TT&TT&TT&&&&&&&TTT&
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

@@ -9,7 +9,10 @@ keeps a copy of every board it changes in the old/ folder.
 Every place in the Quest is one text file in this folder. Boards are grouped
 into levels (1 is Robot Town, 2 is Spooky Islands, 3 is Rainbow Kingdom,
 4 is the Witches' Crown, 5 is the Whispering Forest, 6 is Dragon
-Mountain, 7 is Trap Road, a demo of the moving traps). Each level starts on the board with the @ in it.
+Mountain, 7 is the Lion Jungle). Each level starts on the board with the @ in it.
+The demos/ folder has boards that aren't in the game: Trap Road, a demo of
+the moving traps. To play it, copy its boards into this folder (it is level
+8, and its start board says "open: yes", so it opens right away).
 Change a board, or copy one to make a new place, then run "quest check" to
 look for mistakes.
 
@@ -49,7 +52,8 @@ A board file looks like this:
                       before the levels in front of it are won
   opening: / ending:  the movie played at the start and at the end
                       (town, crown, ship, ghosts, rainbow, rainbow_end,
-                      thief, home, witches, moon, dragon, wish;
+                      thief, home, witches, moon, dragon, wish,
+                      hunters, roar;
                       they live in quest_scenes.py)
 
   1: to 9:            what robot 1 to 9 on the map says ("Name: words")
@@ -92,6 +96,10 @@ MAP SYMBOLS
            that touch move together, shove you, and squish you against walls
   D        fire spitter (spits fireballs when you're in line with it; zap it)
   _        trap floor: looks like ground, but SNAP! a cage of weak walls
+  W        a lion in a hunters' cage: walk into it to set it free
+  M        the bars of the Lion Queen's cage: they all open when every
+           W on every board of the level is free
+  U        the Lion Queen (walk into her to win the level)
   >        a way down (stairs, a hole, a well)
   <        the way back up
   1 to 9   a robot who talks

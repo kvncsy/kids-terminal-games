@@ -1,0 +1,27 @@
+title: Hunters' Camp
+north: river
+west: swamp
+east: rock
+1: Camp Bot: This is the hunters' camp! The hunters ran away, but they left their traps... and their keys.
+map:
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&   &&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+&TTT&&TTTT&TTTT&&TTT&T&TT&T&   T&&T&T&&TT&TTTTTT&T&T&&TTT&&&
+&&T                       1                              TT&
+&&T     #######                             #######      &T&
+        #     # $            _              #     #  L   TT&
+        #  r  #                             # a + #      TT&
+&TT     #     #          L                  #     #      TT&
+&&&     ### ###                             ### ###      TT&
+&&T                                                      T&&
+&T&                          D           $                  
+&TT  _                                                      
+&TT                                                         
+&TT                                                      T&&
+&TT                #B#               #G#                 &&&
+&TT                #W#               #W#            _    TT&
+                   ###               ###                 T&&
+                                  L                      T&&
+&TT a                        D                         * TT&
+&T&                                                      TT&
+&&&TTTTTTTTTTTTT&TT&TTTTTT&TTT&&&TTT&TTTTTTT&TTTTTTTTTTTTTT&
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

@@ -91,7 +91,7 @@ ZAP_STEP = 0.035           # seconds for a zap to move one square
 RUN_STEP = 0.12            # hold an arrow to run: one step this often (about 8 a second)
 SHOT_GAP = 0.25            # and holding SPACE zaps this often
 HELD = 0.1                 # a key back this fast is being held down, not pressed again
-LEGEND = set(" #%&~=:TO*$a+l?rbygpcRBYGPCLHEFVKQA,<>!@123456789o^XZD_")
+LEGEND = set(" #%&~=:TO*$a+l?rbygpcRBYGPCLHEFVKQA,<>!@123456789o^XZD_WUM")
 TRAPS = "oXZ"              # rolling rocks and crushers: they move, and go home when you come into a board
 FLY_OVER = " =~:^_"        # what zaps and fireballs fly over
 KEYS = {"r": "red", "b": "blue", "y": "yellow", "g": "green", "p": "purple", "c": "light blue"}
@@ -108,18 +108,18 @@ FANCY = {"#": "█", "%": "▒", "~": "≈", "=": "═", ":": "░", "T": "♣",
          "+": "♥", "L": "Ω", "H": "Ö", "E": "¥", "F": "ƒ", "?": "?", "l": "☼", "!": "♛",
          "&": "▓", "V": "v", "K": "K", "Q": "Q", "A": "A", ",": ",", ">": "▼", "<": "▲",
          "o": "○", "^": "▲", "X": "≡", "Z": "≡", "D": "¤", "_": "_", "down": "·", "fire": "*",
-         "key": "♀", "door": "◘", "friend": "☻", "player": "☺", "heart": "♥", "star": "★"}
+         "W": "Ω", "U": "Ω", "M": "║", "key": "♀", "door": "◘", "friend": "☻", "player": "☺", "heart": "♥", "star": "★"}
 PLAIN = {"#": "█", "%": "%", "~": "~", "=": "=", ":": ":", "T": "T", "O": "O", "*": "*", "$": "$", "a": "a",
          "+": "+", "L": "L", "H": "G", "E": "E", "F": "F", "?": "?", "l": "i", "!": "W",
          "&": "#", "V": "v", "K": "K", "Q": "Q", "A": "A", ",": ",", ">": ">", "<": "<",
          "o": "o", "^": "^", "X": "X", "Z": "Z", "D": "D", "_": "_", "down": ".", "fire": "*",
-         "key": "k", "door": "▒", "friend": "&", "player": "@", "heart": "+", "star": "*"}
+         "W": "w", "U": "U", "M": "|", "key": "k", "door": "▒", "friend": "&", "player": "@", "heart": "+", "star": "*"}
 # the Linux console with the kids' font (KIDS_FANCY=1, see kids.bashrc): the old PC symbols, but no star or crown
 CONSOLE = dict(FANCY, **{"!": "W", "star": "*"})
 COLORS = {"#": WHITE, "%": YELLOW, "~": BLUE, "=": ORANGE, "T": GREEN, "O": MAGENTA, "*": CYAN, "$": YELLOW,
           "a": CYAN, "+": RED, "L": RED, "H": WHITE, "E": GREEN, "F": MAGENTA, "?": MAGENTA, "l": YELLOW, "!": YELLOW,
           "&": GREEN, "V": WHITE, "K": GREEN, "Q": MAGENTA, "A": MAGENTA, ",": ORANGE, ">": CYAN, "<": CYAN,
-          "o": ORANGE, "^": RED, "X": RED, "Z": RED, "D": ORANGE, "_": WHITE}
+          "o": ORANGE, "^": RED, "X": RED, "Z": RED, "D": ORANGE, "_": WHITE, "W": YELLOW, "M": ORANGE}
 WALKABLE = " =:"           # ground you can stand on (bridges and rainbows stay put when you walk over them)
 
 
@@ -450,6 +450,8 @@ def glyph(L, t, now):
         return "A", color(MAGENTA if int(now * 3) % 4 else GREEN)
     if t == "D":
         return L["D"], color(ORANGE if int(now * 4) % 2 else YELLOW)
+    if t == "U":                                     # the Lion Queen shines
+        return L["U"], color(YELLOW if int(now * 3) % 3 else WHITE) | curses.A_REVERSE
     return L.get(t, t), color(COLORS.get(t, WHITE), t not in "#")
 
 
@@ -628,6 +630,7 @@ class Game:
         self.lamp = False
         self.gold = 0
         self.crown = False        # Level 4: the crown from the Leprechaun King, for Queen Maeve
+        self.lions_total = self.caged_lions()    # Level 7: lions in cages, to set free
         self.birds = []           # crows flying away
         self.nibbled_at = 0.0     # when a rat last nibbled you
         self.parts = []           # sparkles on the board
@@ -785,6 +788,17 @@ class Game:
         elif t == "Q":
             self.meet_queen(nx, ny)
             return
+        elif t == "W":
+            self.free_lion(nx, ny)
+            return
+        elif t == "U":
+            self.meet_lion_queen(nx, ny)
+            return
+        elif t == "M":
+            self.snd.bump()
+            self.say("The Lion Queen's cage is locked tight. Free %d more lion%s, and they'll help!"
+                     % (self.caged_lions(), "" if self.caged_lions() == 1 else "s"), ORANGE, 3)
+            return
         elif t == "F":
             self.health = MAX_HEALTH
             self.snd.fairy()
@@ -935,6 +949,40 @@ class Game:
         self.score += 500
         self.burst(x, y, 60, [MAGENTA, YELLOW, WHITE, CYAN], "*+.")
         self.snd.fairy()
+        self.finish_level()
+        self.snd.win()
+
+    def caged_lions(self):
+        """How many lions are still in the hunters' cages, on every board of this level."""
+        return sum(row.count("W") for b in self.boards.values() for row in b.grid)
+
+    def free_lion(self, x, y):
+        """A lion in a cage: you set it free! When they're all free, they roar the Lion Queen's gate open."""
+        self.board.set(x, y, " ")
+        self.health = MAX_HEALTH
+        self.score += 100
+        self.snd.lion_gone()
+        self.snd.fairy()
+        self.burst(x, y, 30, [YELLOW, ORANGE, WHITE], "*+.")
+        left = self.caged_lions()
+        if left:
+            self.say("ROAR! You freed a lion! It licks your face: hearts full! (%d more to free)" % left, YELLOW, 4)
+            return
+        for b in self.boards.values():
+            for row in b.grid:
+                for i, c in enumerate(row):
+                    if c == "M":
+                        row[i] = " "
+        self.snd.win()
+        self.say_box("ROOOAAAR!", "All the lions are free! They roar together, SO loud that the bars of "
+                     "the Lion Queen's cage fall down! Go and find her at Lion Rock.")
+
+    def meet_lion_queen(self, x, y):
+        """The Lion Queen, out of her cage: that wins the level."""
+        self.board.set(x, y, " ")
+        self.px, self.py = x, y
+        self.score += 500
+        self.burst(x, y, 60, [YELLOW, ORANGE, WHITE, RED], "*+.")
         self.finish_level()
         self.snd.win()
 
@@ -1532,6 +1580,10 @@ class Game:
         if self.lamp:
             put(self.scr, y + 10, x, "  Lamp", on_blue(WHITE))
             put(self.scr, y + 10, x + 9, self.look["l"], on_blue(YELLOW))
+        if self.lions_total:
+            put(self.scr, y + 11, x, "  Lions", on_blue(WHITE))
+            free = self.lions_total - self.caged_lions()
+            put(self.scr, y + 11, x + 9, "%d of %d free" % (free, self.lions_total), on_blue(YELLOW))
         if self.crown:
             put(self.scr, y + 11, x, "  Crown", on_blue(WHITE))
             put(self.scr, y + 11, x + 9, self.look["!"], on_blue(RAINBOW[int(now * 6) % len(RAINBOW)]))

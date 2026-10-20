@@ -1,0 +1,33 @@
+title: Jungle Edge
+adventure: Lion Jungle
+goal: the Lion Queen
+opening: hunters
+ending: roar
+intro: Hunters trapped the Lion Queen in a cage! Free her 6 lions from the hunters' cages, and together they'll roar her cage open. Watch out for traps... and angry lions!
+east: river
+south: swamp
+1: Ranger Bot: The hunters caught the Lion Queen AND six of her lions! Free every lion, and they'll help you free the Queen.
+2: Trail Bot: The high trail and the low trail both go to the river... but to different sides of it!
+3: Zap Bot: That cage is made of weak yellow walls. ZAP them with SPACE, then let the lion out!
+map:
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+&TTT&&TTTTTTTT&TTTT&T&TTTTTTTTTTTT&TTTTTTTTT&TT&TTTTT&TTT&T&
+&&T&TTTT&TT&TT&TTTTT&T&TT&TTT&TTT&&TT&TT&T&TTTT&TT&&TTTTT&T&
+&T&TT&T&&TTT&&&TTTTT&&&TTTTTT&TTT&T&TTTTTT&T&TTT&&TTT&TTTTT&
+&TT&&&TTTT        $                       ^^^^^^^^^         
+&TTTT&&&TT                        $       ^^^^^^^^^         
+&&TTTT&TTT   &&&T&&&TTTT&T  &&&T&TTTT&&&&&T&TT&&TTT&TTTT&TT&
+&&TTTTTTT&   TTTTTTT&TTT                 T&T&TTT&T&T&TTTT&T&
+&T             TTTTTTT&&     3           TTTTTTT&TTT&TTTTTT&
+&T     1       &TTTT&TTT       %%%       TTT&TTTTTT&TTTTTTT&
+&&  @          TT&T&&TTT       %W%       TTT&TT&TT&&T&&T&T&&
+&&             TTTTTT&T&       %%%       TTTTT&T&T&TT&TTTTT&
+&T a     a   2 TTTTTTTT& +          L    &TTTT&&TTTT&TT&T&&&
+&&             TTTTT&TTT                 TTT&&&T&&TT&TT&TTT&
+&TTTT   TTTT   &T&&TTT&T&TTTTTT&&TTTT  &&TTTTTTT&TTTTT&TTT&&
+&TT&&   &TTT        _                                  *    
+&TT&T   T&TT        _                          L            
+&TT&T   TTTTTT&TTTT&TTT&&T&TT&&TTTTT&T&T&TTT&T&&&TT&&TTTT&&&
+&&TTT $ TT&T&TTTTT&TTT&T&TTTTTT&TT&TTTTT&&T&TTTT&TT&&TTTT&&&
+&TT&T   T&TT&&TTT&&TTTT&TTTTTTT&TTT&TTT&TT&TTTTTTTTTT&T&T&T&
+&&&&&   &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

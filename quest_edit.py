@@ -42,13 +42,15 @@ NAMES = {
     "K": "Leprechaun King", "Q": "Queen Maeve", ">": "way down", "<": "way up",
     "o": "rolling rock (rolls at you!)", "^": "pop-up spikes", "X": "crusher (slides up and down)",
     "Z": "crusher (slides side to side)", "D": "fire spitter", "_": "trap floor (hidden cage)",
+    "W": "lion in a cage (set it free!)", "U": "the Lion Queen (wins the level)",
+    "M": "Lion Queen's gate (opens when every caged lion is free)",
 }
 for k, name in q.KEYS.items():
     NAMES[k] = "%s key" % name
     NAMES[k.upper()] = "%s door" % name
 for d in "123456789":
     NAMES[d] = "robot %s (talks)" % d
-PALETTE = [c for c in " #%&~=:TO*$a+l?!@LHEFVA,KQ><o^XZD_rbygpcRBYGPC123456789"]
+PALETTE = [c for c in " #%&~=:TO*$a+l?!@LHEFVA,KQ><o^XZD_WUMrbygpcRBYGPC123456789"]
 assert set(PALETTE) == q.LEGEND, set(PALETTE) ^ q.LEGEND
 
 KEY_HELP = [("type", "put a symbol"), ("Space", "rub out"), ("Enter", "brush again"), ("Tab", "all symbols"),
